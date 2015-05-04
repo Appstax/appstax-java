@@ -1,0 +1,6 @@
+{
+  "errorId":"rzeop5miXOvMB",
+  "errorCode":"ErrBadRequest",
+  "errorDetails":"json.Unmarshal error=unexpected end of JSON input",
+  "errorMessage":"Hmm. We were unable to parse the JSON you supplied. Please make sure the request contains valid JSON"
+}

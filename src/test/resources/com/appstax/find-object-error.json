@@ -1,0 +1,6 @@
+{
+  "errorId":"4Lmv1Goi0pvGE",
+  "errorCode":"ErrObjectNotFound",
+  "errorDetails":"obj.doRead returned no rows",
+  "errorMessage":"Object not found"
+}
