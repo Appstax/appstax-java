@@ -4,16 +4,14 @@ import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-import static com.appstax.AppstaxTestHelpers.createMockWebServer;
-import static com.appstax.AppstaxTestHelpers.getResource;
+import static org.junit.Assert.assertEquals;
 
-public class AppstaxExceptionTest {
+public class AppstaxExceptionTest extends AppstaxTest {
 
     @Test
     public void testSaveError() throws Exception {
         MockWebServer server = createMockWebServer();
-        server.enqueue(new MockResponse().setBody(getResource(getClass(), "save-object-error.json")).setResponseCode(400));
+        server.enqueue(new MockResponse().setBody(getResource("save-object-error.json")).setResponseCode(400));
 
         try {
             new AppstaxObject("c").save();
