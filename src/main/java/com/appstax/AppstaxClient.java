@@ -1,19 +1,21 @@
-package com.appstax.network;
+package com.appstax;
 
-import com.appstax.Appstax;
-import com.appstax.exceptions.AppstaxRequestException;
 import com.squareup.okhttp.*;
 import org.json.JSONObject;
 
 import java.io.IOException;
 
-public final class AppstaxClient {
+final class AppstaxClient {
+
+    private static final String ERROR_ID = "errorId";
+    private static final String ERROR_CODE = "errorCode";
+    private static final String ERROR_MESSAGE = "errorMessage";
 
     private static final String HEADER_APP_KEY = "x-appstax-appkey";
     private static final String HEADER_SESSION_ID = "x-appstax-sessionid";
-    private static final String HEADER_ACCEPT = "Accept";
-    private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_TYPE_JSON = "application/json; charset=utf-8";
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String HEADER_ACCEPT = "Accept";
 
     private static OkHttpClient client = new OkHttpClient();
     public static enum Method { GET, PUT, POST, DELETE }
@@ -30,7 +32,7 @@ public final class AppstaxClient {
             check(res, body);
             return new JSONObject(body);
         } catch (IOException e) {
-            throw new AppstaxRequestException("Request error", e);
+            throw new AppstaxException(e.getMessage(), e);
         }
     }
 
@@ -55,7 +57,14 @@ public final class AppstaxClient {
 
     private static void check(Response response, String body) {
         if (!response.isSuccessful()) {
-            throw new AppstaxRequestException(body);
+            JSONObject error = new JSONObject(body);
+
+            throw new AppstaxException(
+                response.code(),
+                error.getString(ERROR_ID),
+                error.getString(ERROR_CODE),
+                error.getString(ERROR_MESSAGE)
+            );
         }
     }
 

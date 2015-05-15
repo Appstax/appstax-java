@@ -1,6 +1,6 @@
-package com.appstax.network;
+package com.appstax;
 
-public abstract class AppstaxPaths {
+abstract class AppstaxPaths {
 
     public static String collection(String collection) {
         return "objects/" + collection;

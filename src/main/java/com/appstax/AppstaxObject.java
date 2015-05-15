@@ -1,7 +1,5 @@
 package com.appstax;
 
-import com.appstax.network.AppstaxClient;
-import com.appstax.network.AppstaxPaths;
 import org.json.JSONObject;
 
 public final class AppstaxObject {
