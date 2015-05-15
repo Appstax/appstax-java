@@ -3,7 +3,7 @@
 
 cd "$(dirname "$0")"/..
 
-FILE="appstax-java-1.0.0.jar"
+FILE="appstax-java-1.0.0-jar-with-dependencies.jar"
 SOURCE="target/$FILE"
 TARGET="../appstax-android/appstax/libs/$FILE"
 
