@@ -4,8 +4,9 @@
 cd "$(dirname "$0")"/..
 
 FILE="appstax-java-1.0.0.jar"
-PATH="../appstax-android/appstax/libs"
+SOURCE="target/$FILE"
+TARGET="../appstax-android/appstax/libs/$FILE"
 
 mvn package
-rm "$PATH/$FILE"
-cp "$FILE" "$PATH/$FILE"
+rm -f "$TARGET"
+cp "$SOURCE" "$TARGET"
