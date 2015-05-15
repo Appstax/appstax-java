@@ -7,8 +7,8 @@ import static org.junit.Assert.assertEquals;
 
 public class AppstaxTest {
 
-    private static final String APP_KEY_1 = "YourAppKey";
-    private static final String APP_KEY_2 = "SomeAppKey";
+    public static final String APP_KEY_1 = "YourAppKey";
+    public static final String APP_KEY_2 = "SomeAppKey";
 
     @Before
     public void before() {

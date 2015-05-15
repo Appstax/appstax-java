@@ -30,7 +30,7 @@ public final class AppstaxClient {
             check(res, body);
             return new JSONObject(body);
         } catch (IOException e) {
-            throw new AppstaxRequestException("Connection error", e);
+            throw new AppstaxRequestException("Request error", e);
         }
     }
 
