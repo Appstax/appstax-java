@@ -1,12 +1,17 @@
 package com.appstax;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class AppstaxObject {
 
-    private final String KEY_CREATED = "sysCreated";
-    private final String KEY_UPDATED = "sysUpdated";
-    private final String KEY_ID = "sysObjectId";
+    private static final String KEY_OBJECTS = "objects";
+    private static final String KEY_CREATED = "sysCreated";
+    private static final String KEY_UPDATED = "sysUpdated";
+    private static final String KEY_ID = "sysObjectId";
 
     private String collection;
     private JSONObject properties;
@@ -15,6 +20,20 @@ public final class AppstaxObject {
         String path = AppstaxPaths.object(collection, id);
         JSONObject properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
         return new AppstaxObject(collection, properties);
+    }
+
+    public static List<AppstaxObject> findAll(String collection) {
+        String path = AppstaxPaths.collection(collection);
+        ArrayList<AppstaxObject> objects = new ArrayList<AppstaxObject>();
+
+        JSONObject json = AppstaxClient.request(AppstaxClient.Method.GET, path);
+        JSONArray array = json.getJSONArray(KEY_OBJECTS);
+
+        for(int i = 0; i < array.length(); i++) {
+            objects.add(new AppstaxObject(collection, array.getJSONObject(i)));
+        }
+
+        return objects;
     }
 
     public AppstaxObject(String collection) {
