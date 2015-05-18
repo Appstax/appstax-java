@@ -19,6 +19,10 @@ public final class AppstaxException extends RuntimeException {
         super(message, e);
     }
 
+    public AppstaxException(String message) {
+        super(message, null);
+    }
+
     public int getStatus() {
         return status;
     }

@@ -10,6 +10,7 @@ final class AppstaxClient {
     private static final String ERROR_ID = "errorId";
     private static final String ERROR_CODE = "errorCode";
     private static final String ERROR_MESSAGE = "errorMessage";
+    private static final String ERROR_KEY = "Use Appstax.setAppKey(\"YourAppKey\") before making requests.";
 
     private static final String HEADER_APP_KEY = "x-appstax-appkey";
     private static final String HEADER_SESSION_ID = "x-appstax-sessionid";
@@ -37,6 +38,11 @@ final class AppstaxClient {
     }
 
     private static Request build(Method method, String path, JSONObject json) {
+
+        if (Appstax.getAppKey() == "") {
+            throw new AppstaxException(ERROR_KEY);
+        }
+
         Request.Builder req = new Request.Builder()
                 .url(Appstax.getApiUrl() + path)
                 .addHeader(HEADER_APP_KEY, Appstax.getAppKey())
