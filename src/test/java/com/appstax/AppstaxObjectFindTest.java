@@ -38,7 +38,7 @@ public class AppstaxObjectFindTest extends AppstaxTest {
         String body = getResource("find-objects-success.json");
         server.enqueue(new MockResponse().setBody(body));
 
-        List<AppstaxObject> objects = AppstaxObject.findAll(COLLECTION_1);
+        List<AppstaxObject> objects = AppstaxObject.find(COLLECTION_1);
         assertEquals(3, objects.size());
         assertEquals("1", objects.get(0).get("title"));
         assertEquals("3", objects.get(2).get("title"));

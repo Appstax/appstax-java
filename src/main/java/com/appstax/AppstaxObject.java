@@ -16,13 +16,7 @@ public final class AppstaxObject {
     private String collection;
     private JSONObject properties;
 
-    public static AppstaxObject find(String collection, String id) {
-        String path = AppstaxPaths.object(collection, id);
-        JSONObject properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
-        return new AppstaxObject(collection, properties);
-    }
-
-    public static List<AppstaxObject> findAll(String collection) {
+    public static List<AppstaxObject> find(String collection) {
         String path = AppstaxPaths.collection(collection);
         ArrayList<AppstaxObject> objects = new ArrayList<AppstaxObject>();
 
@@ -34,6 +28,12 @@ public final class AppstaxObject {
         }
 
         return objects;
+    }
+
+    public static AppstaxObject find(String collection, String id) {
+        String path = AppstaxPaths.object(collection, id);
+        JSONObject properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
+        return new AppstaxObject(collection, properties);
     }
 
     public AppstaxObject(String collection) {
