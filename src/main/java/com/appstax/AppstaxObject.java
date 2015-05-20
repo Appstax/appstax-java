@@ -81,17 +81,6 @@ public final class AppstaxObject {
         return this;
     }
 
-    protected static List<AppstaxObject> objects(String collection, JSONObject json) {
-        ArrayList<AppstaxObject> objects = new ArrayList<AppstaxObject>();
-        JSONArray array = json.getJSONArray(KEY_OBJECTS);
-
-        for(int i = 0; i < array.length(); i++) {
-            objects.add(new AppstaxObject(collection, array.getJSONObject(i)));
-        }
-
-        return objects;
-    }
-
     protected static AppstaxObject find(String collection, String id) {
         String path = AppstaxPaths.object(collection, id);
         JSONObject properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
@@ -115,9 +104,18 @@ public final class AppstaxObject {
             builder.append(OPERATOR + entry.getKey() + "='" + entry.getValue() + "'");
         }
 
-        String filter = builder.toString().replaceFirst(OPERATOR, "");
-        String path = AppstaxPaths.filter(collection, filter);
-        return objects(collection, AppstaxClient.request(AppstaxClient.Method.GET, path));
+        return filter(collection, builder.toString().replaceFirst(OPERATOR, ""));
+    }
+
+    protected static List<AppstaxObject> objects(String collection, JSONObject json) {
+        ArrayList<AppstaxObject> objects = new ArrayList<AppstaxObject>();
+        JSONArray array = json.getJSONArray(KEY_OBJECTS);
+
+        for(int i = 0; i < array.length(); i++) {
+            objects.add(new AppstaxObject(collection, array.getJSONObject(i)));
+        }
+
+        return objects;
     }
 
 }
