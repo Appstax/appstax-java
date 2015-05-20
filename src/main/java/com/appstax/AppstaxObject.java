@@ -67,7 +67,7 @@ public final class AppstaxObject {
         return this;
     }
 
-    protected AppstaxObject delete() {
+    protected AppstaxObject remove() {
         String path = AppstaxPaths.object(this.getCollection(), this.getId());
         this.properties = AppstaxClient.request(AppstaxClient.Method.DELETE, path, this.properties);
         return this;

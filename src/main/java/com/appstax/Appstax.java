@@ -35,8 +35,8 @@ public abstract class Appstax {
         return object.save();
     }
 
-    public static AppstaxObject delete(AppstaxObject object) {
-        return object.delete();
+    public static AppstaxObject remove(AppstaxObject object) {
+        return object.remove();
     }
 
 }

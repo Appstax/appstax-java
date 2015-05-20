@@ -7,18 +7,18 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class AppstaxDeleteTest extends AppstaxTest {
+public class AppstaxRemoveTest extends AppstaxTest {
 
     @Test
-    public void testDeleteOneSuccess() throws Exception {
+    public void testRemoveOneSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
         AppstaxObject object = getObject(server);
 
-        String body = getResource("delete-object-success.json");
+        String body = getResource("remove-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
 
         assertEquals("123", object.getId());
-        Appstax.delete(object);
+        Appstax.remove(object);
 
         assertEquals(null, object.getId());
         assertEquals(null, object.get("title"));
@@ -31,12 +31,14 @@ public class AppstaxDeleteTest extends AppstaxTest {
     }
 
     @Test(expected=AppstaxException.class)
-    public void testDeleteOneError() throws Exception {
+    public void testRemoveOneError() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("find-object-error.json");
+        String body = getResource("remove-object-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(404));
 
-        AppstaxObject object = Appstax.find(COLLECTION_1, "404");
+        AppstaxObject object = new AppstaxObject(COLLECTION_1);
+        Appstax.remove(object);
+
         server.shutdown();
     }
 
