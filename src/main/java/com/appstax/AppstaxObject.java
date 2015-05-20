@@ -47,8 +47,8 @@ public final class AppstaxObject {
 
     protected AppstaxObject save() {
         return this.getId() == null ?
-                this.post() :
-                this.put();
+            this.post() :
+            this.put();
     }
 
     protected AppstaxObject post() {
@@ -70,6 +70,12 @@ public final class AppstaxObject {
     protected AppstaxObject remove() {
         String path = AppstaxPaths.object(this.getCollection(), this.getId());
         this.properties = AppstaxClient.request(AppstaxClient.Method.DELETE, path, this.properties);
+        return this;
+    }
+
+    protected AppstaxObject refresh() {
+        String path = AppstaxPaths.object(this.getCollection(), this.getId());
+        this.properties = AppstaxClient.request(AppstaxClient.Method.GET, path, this.properties);
         return this;
     }
 

@@ -39,4 +39,8 @@ public abstract class Appstax {
         return object.remove();
     }
 
+    public static AppstaxObject refresh(AppstaxObject object) {
+        return object.refresh();
+    }
+
 }
