@@ -19,19 +19,19 @@ final class AppstaxClient {
     private static final String HEADER_ACCEPT = "Accept";
 
     private static OkHttpClient client = new OkHttpClient();
-    public static enum Method { GET, PUT, POST, DELETE }
+    protected static enum Method { GET, PUT, POST, DELETE }
 
-    public static JSONObject request(Method method, String path) {
+    protected static JSONObject request(Method method, String path) {
         return request(method, path, null);
     }
 
-    public static JSONObject request(Method method, String path, JSONObject json) {
+    protected static JSONObject request(Method method, String path, JSONObject json) {
         try {
             Request req = build(method, path, json);
             Response res = client.newCall(req).execute();
-            String body = res.body().string();
+            JSONObject body = parse(res.body().string());
             check(res, body);
-            return new JSONObject(body);
+            return body;
         } catch (IOException e) {
             throw new AppstaxException(e.getMessage(), e);
         }
@@ -61,16 +61,22 @@ final class AppstaxClient {
         return req.build();
     }
 
-    private static void check(Response response, String body) {
+    private static void check(Response response, JSONObject json) {
         if (!response.isSuccessful()) {
-            JSONObject error = new JSONObject(body);
-
             throw new AppstaxException(
                 response.code(),
-                error.getString(ERROR_ID),
-                error.getString(ERROR_CODE),
-                error.getString(ERROR_MESSAGE)
+                json.getString(ERROR_ID),
+                json.getString(ERROR_CODE),
+                json.getString(ERROR_MESSAGE)
             );
+        }
+    }
+
+    private static JSONObject parse(String body) {
+        if (body.length() > 0) {
+            return new JSONObject(body);
+        } else {
+            return new JSONObject();
         }
     }
 

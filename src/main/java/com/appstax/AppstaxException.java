@@ -1,6 +1,6 @@
 package com.appstax;
 
-public final class AppstaxException extends RuntimeException {
+final class AppstaxException extends RuntimeException {
 
     private int status;
     private String id;

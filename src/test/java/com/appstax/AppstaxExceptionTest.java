@@ -14,7 +14,7 @@ public class AppstaxExceptionTest extends AppstaxTest {
         server.enqueue(new MockResponse().setBody(getResource("save-object-error.json")).setResponseCode(400));
 
         try {
-            new AppstaxObject("c").save();
+            Appstax.save(new AppstaxObject("c"));
         } catch(AppstaxException e) {
             assertEquals(400, e.getStatus());
             assertEquals("rzeop5miXOvMB", e.getId());

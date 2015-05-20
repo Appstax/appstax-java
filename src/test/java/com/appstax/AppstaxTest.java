@@ -45,7 +45,7 @@ public abstract class AppstaxTest {
     public AppstaxObject getObject(MockWebServer server) throws Exception {
         String body = getResource("find-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
-        AppstaxObject object = AppstaxObject.find(COLLECTION_1, "123");
+        AppstaxObject object = Appstax.find(COLLECTION_1, "123");
 
         RecordedRequest req = server.takeRequest();
         assertEquals("GET", req.getMethod());
