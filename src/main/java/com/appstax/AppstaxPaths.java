@@ -5,8 +5,24 @@ import java.net.URLEncoder;
 
 abstract class AppstaxPaths {
 
+    public static String users() {
+        return "users";
+    }
+
+    public static String sessions() {
+        return "sessions";
+    }
+
+    public static String session(String sessionId) {
+        return "sessions/" + sessionId;
+    }
+
     public static String collection(String collection) {
         return "objects/" + collection;
+    }
+
+    public static String object(String collection, String id) {
+        return AppstaxPaths.collection(collection) + "/" + id;
     }
 
     public static String filter(String collection, String filter) {
@@ -15,10 +31,6 @@ abstract class AppstaxPaths {
         } catch (UnsupportedEncodingException e) {
             throw new AppstaxException(e.getMessage(), e);
         }
-    }
-
-    public static String object(String collection, String id) {
-        return AppstaxPaths.collection(collection) + "/" + id;
     }
 
 }

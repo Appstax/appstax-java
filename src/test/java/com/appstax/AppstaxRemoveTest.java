@@ -14,9 +14,7 @@ public class AppstaxRemoveTest extends AppstaxTest {
         MockWebServer server = createMockWebServer();
         AppstaxObject object = getObject(server);
 
-        String body = getResource("remove-object-success.json");
-        server.enqueue(new MockResponse().setBody(body));
-
+        server.enqueue(new MockResponse().setBody(""));
         assertEquals("123", object.getId());
         Appstax.remove(object);
 

@@ -1,0 +1,6 @@
+{
+  "errorId":"KLKvx4h5JE8o",
+  "errorCode":"ErrNotAuthorized",
+  "errorDetails":"Could not validate username with password hash",
+  "errorMessage":"Invalid username and/or password"
+}

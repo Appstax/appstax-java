@@ -49,6 +49,10 @@ final class AppstaxClient {
                 .addHeader(HEADER_CONTENT_TYPE, HEADER_TYPE_JSON)
                 .addHeader(HEADER_ACCEPT, HEADER_TYPE_JSON);
 
+        if (Appstax.getCurrentUser() != null) {
+            req.addHeader(HEADER_SESSION_ID, Appstax.getCurrentUser().getSessionId());
+        }
+
         String content = json != null ? json.toString() : "";
         MediaType media = MediaType.parse(HEADER_TYPE_JSON);
         RequestBody body = RequestBody.create(media, content);

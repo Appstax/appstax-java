@@ -7,6 +7,7 @@ public abstract class Appstax {
 
     private static String appKey = "";
     private static String apiUrl = "https://appstax.com/api/latest/";
+    private static volatile AppstaxUser currentUser = null;
 
     public static String getAppKey() {
         return appKey;
@@ -50,6 +51,38 @@ public abstract class Appstax {
 
     public static List<AppstaxObject> filter(String collection, Map<String, String> properties) {
         return AppstaxObject.filter(collection, properties);
+    }
+
+    public static AppstaxUser getCurrentUser() {
+        return Appstax.currentUser;
+    }
+
+    public static AppstaxUser signup(String username, String password) {
+        Appstax.currentUser = AppstaxUser.signup(username, password);
+        return Appstax.currentUser;
+    }
+
+    public static AppstaxUser login(String username, String password) {
+        Appstax.currentUser = AppstaxUser.login(username, password);
+        return Appstax.currentUser;
+    }
+
+    public static AppstaxUser logout() {
+        if (Appstax.currentUser != null) {
+            Appstax.currentUser.logout();
+            Appstax.currentUser = null;
+        }
+        return Appstax.currentUser;
+    }
+
+    public static AppstaxUser save(AppstaxUser user) {
+        user.getObject().save();
+        return user;
+    }
+
+    public static AppstaxUser refresh(AppstaxUser user) {
+        user.getObject().refresh();
+        return user;
     }
 
 }
