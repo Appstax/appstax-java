@@ -2,8 +2,10 @@ package com.appstax;
 
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
+import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -42,6 +44,47 @@ public class AppstaxFindTest extends AppstaxTest {
         assertEquals(3, objects.size());
         assertEquals("1", objects.get(0).get("title"));
         assertEquals("3", objects.get(2).get("title"));
+
+        server.shutdown();
+    }
+
+    @Test
+    public void testFilterString() throws Exception {
+        MockWebServer server = createMockWebServer();
+        String body = getResource("find-objects-success.json");
+        server.enqueue(new MockResponse().setBody(body));
+
+        List<AppstaxObject> objects = Appstax.filter(COLLECTION_1, "Age > 42 and name like 'Alex%'");
+        assertEquals(3, objects.size());
+
+        RecordedRequest req = server.takeRequest();
+        assertEquals("GET", req.getMethod());
+
+        String expected = "filter=Age+%3E+42+and+name+like+%27Alex%25%27";
+        String actual = req.getPath().substring(req.getPath().indexOf("filter"));
+        assertEquals(expected, actual);
+
+        server.shutdown();
+    }
+
+    @Test
+    public void testFilterProperties() throws Exception {
+        MockWebServer server = createMockWebServer();
+        String body = getResource("find-objects-success.json");
+        server.enqueue(new MockResponse().setBody(body));
+
+        HashMap properties = new HashMap<String, String>();
+        properties.put("foo", "b r");
+
+        List<AppstaxObject> objects = Appstax.filter(COLLECTION_1, properties);
+        assertEquals(3, objects.size());
+
+        RecordedRequest req = server.takeRequest();
+        assertEquals("GET", req.getMethod());
+
+        String expected = "filter=foo%3D%27b+r%27";
+        String actual = req.getPath().substring(req.getPath().indexOf("filter"));
+        assertEquals(expected, actual);
 
         server.shutdown();
     }

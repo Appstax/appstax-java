@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class AppstaxObject {
 
@@ -12,6 +13,7 @@ public final class AppstaxObject {
     private static final String KEY_CREATED = "sysCreated";
     private static final String KEY_UPDATED = "sysUpdated";
     private static final String KEY_ID = "sysObjectId";
+    private static final String OPERATOR = " and ";
 
     private String collection;
     private JSONObject properties;
@@ -20,7 +22,7 @@ public final class AppstaxObject {
         this(collection, new JSONObject());
     }
 
-    public AppstaxObject(String collection, JSONObject properties) {
+    protected AppstaxObject(String collection, JSONObject properties) {
         this.collection = collection;
         this.properties = properties;
     }
@@ -79,11 +81,8 @@ public final class AppstaxObject {
         return this;
     }
 
-    protected static List<AppstaxObject> find(String collection) {
-        String path = AppstaxPaths.collection(collection);
+    protected static List<AppstaxObject> objects(String collection, JSONObject json) {
         ArrayList<AppstaxObject> objects = new ArrayList<AppstaxObject>();
-
-        JSONObject json = AppstaxClient.request(AppstaxClient.Method.GET, path);
         JSONArray array = json.getJSONArray(KEY_OBJECTS);
 
         for(int i = 0; i < array.length(); i++) {
@@ -97,6 +96,28 @@ public final class AppstaxObject {
         String path = AppstaxPaths.object(collection, id);
         JSONObject properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
         return new AppstaxObject(collection, properties);
+    }
+
+    protected static List<AppstaxObject> find(String collection) {
+        String path = AppstaxPaths.collection(collection);
+        return objects(collection, AppstaxClient.request(AppstaxClient.Method.GET, path));
+    }
+
+    protected static List<AppstaxObject> filter(String collection, String filter) {
+        String path = AppstaxPaths.filter(collection, filter);
+        return objects(collection, AppstaxClient.request(AppstaxClient.Method.GET, path));
+    }
+
+    protected static List<AppstaxObject> filter(String collection, Map<String, String> properties) {
+        StringBuilder builder = new StringBuilder();
+
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            builder.append(OPERATOR + entry.getKey() + "='" + entry.getValue() + "'");
+        }
+
+        String filter = builder.toString().replaceFirst(OPERATOR, "");
+        String path = AppstaxPaths.filter(collection, filter);
+        return objects(collection, AppstaxClient.request(AppstaxClient.Method.GET, path));
     }
 
 }

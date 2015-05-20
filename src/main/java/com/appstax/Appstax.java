@@ -1,6 +1,7 @@
 package com.appstax;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class Appstax {
 
@@ -23,14 +24,6 @@ public abstract class Appstax {
         apiUrl = url.replaceAll("/$", "") + "/";
     }
 
-    public static List<AppstaxObject> find(String collection) {
-        return AppstaxObject.find(collection);
-    }
-
-    public static AppstaxObject find(String collection, String id) {
-        return AppstaxObject.find(collection, id);
-    }
-
     public static AppstaxObject save(AppstaxObject object) {
         return object.save();
     }
@@ -41,6 +34,22 @@ public abstract class Appstax {
 
     public static AppstaxObject refresh(AppstaxObject object) {
         return object.refresh();
+    }
+
+    public static AppstaxObject find(String collection, String id) {
+        return AppstaxObject.find(collection, id);
+    }
+
+    public static List<AppstaxObject> find(String collection) {
+        return AppstaxObject.find(collection);
+    }
+
+    public static List<AppstaxObject> filter(String collection, String filter) {
+        return AppstaxObject.filter(collection, filter);
+    }
+
+    public static List<AppstaxObject> filter(String collection, Map<String, String> properties) {
+        return AppstaxObject.filter(collection, properties);
     }
 
 }
