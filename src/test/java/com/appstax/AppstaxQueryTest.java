@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class AppstaxFindTest extends AppstaxTest {
+public class AppstaxQueryTest extends AppstaxTest {
 
     @Test
     public void testFindOneSuccess() throws Exception {

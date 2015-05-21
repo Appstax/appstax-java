@@ -3,14 +3,12 @@ package com.appstax;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public final class AppstaxObject {
 
-    private static final String KEY_OBJECTS = "objects";
     private static final String KEY_CREATED = "sysCreated";
     private static final String KEY_UPDATED = "sysUpdated";
     private static final String KEY_ID = "sysObjectId";
@@ -22,7 +20,6 @@ public final class AppstaxObject {
     private static final String KEY_USER = "username";
     private static final String KEY_PERMISSIONS = "permissions";
     private static final String TYPE_FILE = "file";
-    private static final String OPERATOR = " and ";
 
     private String collection;
     private JSONObject properties;
@@ -86,19 +83,22 @@ public final class AppstaxObject {
         return this.permission(KEY_REVOKES, username, permissions);
     }
 
-    private AppstaxObject permission(String type, String username, List<String> permissions) {
-        JSONObject grant = new JSONObject();
-        grant.put(KEY_ID, this.getId());
-        grant.put(KEY_USER, username);
-        grant.put(KEY_PERMISSIONS, new JSONArray(permissions));
-        this.access.getJSONArray(type).put(grant);
-        return this;
-    }
-
     protected AppstaxObject save() {
         saveObject();
         saveAccess();
         saveFiles();
+        return this;
+    }
+
+    protected AppstaxObject remove() {
+        String path = AppstaxPaths.object(this.getCollection(), this.getId());
+        this.properties = AppstaxClient.request(AppstaxClient.Method.DELETE, path);
+        return this;
+    }
+
+    protected AppstaxObject refresh() {
+        String path = AppstaxPaths.object(this.getCollection(), this.getId());
+        this.properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
         return this;
     }
 
@@ -124,19 +124,6 @@ public final class AppstaxObject {
         );
     }
 
-    private void saveFiles() {
-        for (Map.Entry<String, AppstaxFile> item : this.files.entrySet()) {
-            String key = item.getKey();
-            String name = item.getValue().getName();
-            String data = item.getValue().getData();
-            String path = AppstaxPaths.file(this.getCollection(), this.getId(), key, name);
-
-            Map<String, String> form = new HashMap<String, String>();
-            form.put(KEY_DATA, data);
-            AppstaxClient.form(AppstaxClient.Method.PUT, path, form);
-        }
-    }
-
     private AppstaxObject createObject() {
         String path = AppstaxPaths.collection(this.getCollection());
         JSONObject meta = AppstaxClient.request(AppstaxClient.Method.POST, path, this.properties);
@@ -153,53 +140,26 @@ public final class AppstaxObject {
         return this;
     }
 
-    protected AppstaxObject remove() {
-        String path = AppstaxPaths.object(this.getCollection(), this.getId());
-        this.properties = AppstaxClient.request(AppstaxClient.Method.DELETE, path);
+    private AppstaxObject permission(String type, String username, List<String> permissions) {
+        JSONObject grant = new JSONObject();
+        grant.put(KEY_ID, this.getId());
+        grant.put(KEY_USER, username);
+        grant.put(KEY_PERMISSIONS, new JSONArray(permissions));
+        this.access.getJSONArray(type).put(grant);
         return this;
     }
 
-    protected AppstaxObject refresh() {
-        String path = AppstaxPaths.object(this.getCollection(), this.getId());
-        this.properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
-        return this;
-    }
+    private void saveFiles() {
+        for (Map.Entry<String, AppstaxFile> item : this.files.entrySet()) {
+            String key = item.getKey();
+            String name = item.getValue().getName();
+            String data = item.getValue().getData();
+            String path = AppstaxPaths.file(this.getCollection(), this.getId(), key, name);
 
-    protected static AppstaxObject find(String collection, String id) {
-        String path = AppstaxPaths.object(collection, id);
-        JSONObject properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
-        return new AppstaxObject(collection, properties);
-    }
-
-    protected static List<AppstaxObject> find(String collection) {
-        String path = AppstaxPaths.collection(collection);
-        return objects(collection, AppstaxClient.request(AppstaxClient.Method.GET, path));
-    }
-
-    protected static List<AppstaxObject> filter(String collection, String filter) {
-        String path = AppstaxPaths.filter(collection, filter);
-        return objects(collection, AppstaxClient.request(AppstaxClient.Method.GET, path));
-    }
-
-    protected static List<AppstaxObject> filter(String collection, Map<String, String> properties) {
-        StringBuilder builder = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            builder.append(OPERATOR + entry.getKey() + "='" + entry.getValue() + "'");
+            Map<String, String> form = new HashMap<String, String>();
+            form.put(KEY_DATA, data);
+            AppstaxClient.form(AppstaxClient.Method.PUT, path, form);
         }
-
-        return filter(collection, builder.toString().replaceFirst(OPERATOR, ""));
-    }
-
-    private static List<AppstaxObject> objects(String collection, JSONObject json) {
-        ArrayList<AppstaxObject> objects = new ArrayList<AppstaxObject>();
-        JSONArray array = json.getJSONArray(KEY_OBJECTS);
-
-        for(int i = 0; i < array.length(); i++) {
-            objects.add(new AppstaxObject(collection, array.getJSONObject(i)));
-        }
-
-        return objects;
     }
 
 }

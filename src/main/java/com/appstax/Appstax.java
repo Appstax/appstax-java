@@ -38,19 +38,19 @@ public abstract class Appstax {
     }
 
     public static AppstaxObject find(String collection, String id) {
-        return AppstaxObject.find(collection, id);
+        return AppstaxQuery.find(collection, id);
     }
 
     public static List<AppstaxObject> find(String collection) {
-        return AppstaxObject.find(collection);
+        return AppstaxQuery.find(collection);
     }
 
     public static List<AppstaxObject> filter(String collection, String filter) {
-        return AppstaxObject.filter(collection, filter);
+        return AppstaxQuery.filter(collection, filter);
     }
 
     public static List<AppstaxObject> filter(String collection, Map<String, String> properties) {
-        return AppstaxObject.filter(collection, properties);
+        return AppstaxQuery.filter(collection, properties);
     }
 
     public static AppstaxUser getCurrentUser() {
@@ -58,21 +58,20 @@ public abstract class Appstax {
     }
 
     public static AppstaxUser signup(String username, String password) {
-        Appstax.currentUser = AppstaxUser.signup(username, password);
+        Appstax.currentUser = AppstaxSession.signup(username, password);
         return Appstax.currentUser;
     }
 
     public static AppstaxUser login(String username, String password) {
-        Appstax.currentUser = AppstaxUser.login(username, password);
+        Appstax.currentUser = AppstaxSession.login(username, password);
         return Appstax.currentUser;
     }
 
-    public static AppstaxUser logout() {
+    public static void logout() {
         if (Appstax.currentUser != null) {
-            Appstax.currentUser.logout();
+            AppstaxSession.logout(Appstax.currentUser);
             Appstax.currentUser = null;
         }
-        return Appstax.currentUser;
     }
 
     public static AppstaxUser save(AppstaxUser user) {
