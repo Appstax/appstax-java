@@ -36,7 +36,7 @@ final class AppstaxClient {
         return execute(jsonRequest(method, path, json));
     }
 
-    public static JSONObject form(Method method, String path, Map<String, String> form) {
+    protected static JSONObject form(Method method, String path, Map<String, String> form) {
         return execute(formRequest(method, path, form));
     }
 
