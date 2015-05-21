@@ -13,18 +13,26 @@ public final class AppstaxObject {
     private static final String KEY_CREATED = "sysCreated";
     private static final String KEY_UPDATED = "sysUpdated";
     private static final String KEY_ID = "sysObjectId";
+    private static final String KEY_GRANTS = "grants";
+    private static final String KEY_REVOKES = "revokes";
+    private static final String KEY_USER = "username";
+    private static final String KEY_PERMISSIONS = "permissions";
     private static final String OPERATOR = " and ";
 
     private String collection;
     private JSONObject properties;
+    private JSONObject access;
 
     public AppstaxObject(String collection) {
         this(collection, new JSONObject());
     }
 
-    protected AppstaxObject(String collection, JSONObject properties) {
+    public AppstaxObject(String collection, JSONObject properties) {
         this.collection = collection;
         this.properties = properties;
+        this.access = new JSONObject();
+        this.access.put(KEY_GRANTS, new JSONArray());
+        this.access.put(KEY_REVOKES, new JSONArray());
     }
 
     public String getId() {
@@ -47,13 +55,59 @@ public final class AppstaxObject {
             null;
     }
 
+    public AppstaxObject grant(List<String> permissions) {
+        return this.grant("*", permissions);
+    }
+
+    public AppstaxObject grant(String username, List<String> permissions) {
+        return this.permission(KEY_GRANTS, username, permissions);
+    }
+
+    public AppstaxObject revoke(List<String> permissions) {
+        return this.revoke("*", permissions);
+    }
+
+    public AppstaxObject revoke(String username, List<String> permissions) {
+        return this.permission(KEY_REVOKES, username, permissions);
+    }
+
+    private AppstaxObject permission(String type, String username, List<String> permissions) {
+        JSONObject grant = new JSONObject();
+        grant.put(KEY_ID, this.getId());
+        grant.put(KEY_USER, username);
+        grant.put(KEY_PERMISSIONS, new JSONArray(permissions));
+        this.access.getJSONArray(type).put(grant);
+        return this;
+    }
+
     protected AppstaxObject save() {
+        saveObject();
+        saveAccess();
+        return this;
+    }
+
+    private AppstaxObject saveObject() {
         return this.getId() == null ?
             this.post() :
             this.put();
     }
 
-    protected AppstaxObject post() {
+    private AppstaxObject saveAccess() {
+        if (this.hasAccess()) {
+            String path = AppstaxPaths.permissions();
+            AppstaxClient.request(AppstaxClient.Method.POST, path, this.access);
+        }
+        return this;
+    }
+
+    private boolean hasAccess() {
+        return (
+            this.access.getJSONArray(KEY_GRANTS).length() > 0 ||
+            this.access.getJSONArray(KEY_REVOKES).length() > 0
+        );
+    }
+
+    private AppstaxObject post() {
         String path = AppstaxPaths.collection(this.getCollection());
         JSONObject meta = AppstaxClient.request(AppstaxClient.Method.POST, path, this.properties);
         this.put(KEY_CREATED, meta.get(KEY_CREATED));
@@ -62,7 +116,7 @@ public final class AppstaxObject {
         return this;
     }
 
-    protected AppstaxObject put() {
+    private AppstaxObject put() {
         String path = AppstaxPaths.object(this.getCollection(), this.getId());
         JSONObject meta = AppstaxClient.request(AppstaxClient.Method.PUT, path, this.properties);
         this.put(KEY_UPDATED, meta.get(KEY_UPDATED));
@@ -71,13 +125,13 @@ public final class AppstaxObject {
 
     protected AppstaxObject remove() {
         String path = AppstaxPaths.object(this.getCollection(), this.getId());
-        this.properties = AppstaxClient.request(AppstaxClient.Method.DELETE, path, this.properties);
+        this.properties = AppstaxClient.request(AppstaxClient.Method.DELETE, path);
         return this;
     }
 
     protected AppstaxObject refresh() {
         String path = AppstaxPaths.object(this.getCollection(), this.getId());
-        this.properties = AppstaxClient.request(AppstaxClient.Method.GET, path, this.properties);
+        this.properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
         return this;
     }
 
@@ -107,7 +161,7 @@ public final class AppstaxObject {
         return filter(collection, builder.toString().replaceFirst(OPERATOR, ""));
     }
 
-    protected static List<AppstaxObject> objects(String collection, JSONObject json) {
+    private static List<AppstaxObject> objects(String collection, JSONObject json) {
         ArrayList<AppstaxObject> objects = new ArrayList<AppstaxObject>();
         JSONArray array = json.getJSONArray(KEY_OBJECTS);
 
