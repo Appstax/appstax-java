@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,15 +14,20 @@ public final class AppstaxObject {
     private static final String KEY_CREATED = "sysCreated";
     private static final String KEY_UPDATED = "sysUpdated";
     private static final String KEY_ID = "sysObjectId";
+    private static final String KEY_TYPE = "sysDatatype";
+    private static final String KEY_FILE = "filename";
+    private static final String KEY_DATA = "filedata";
     private static final String KEY_GRANTS = "grants";
     private static final String KEY_REVOKES = "revokes";
     private static final String KEY_USER = "username";
     private static final String KEY_PERMISSIONS = "permissions";
+    private static final String TYPE_FILE = "file";
     private static final String OPERATOR = " and ";
 
     private String collection;
     private JSONObject properties;
     private JSONObject access;
+    private Map<String, AppstaxFile> files;
 
     public AppstaxObject(String collection) {
         this(collection, new JSONObject());
@@ -33,6 +39,7 @@ public final class AppstaxObject {
         this.access = new JSONObject();
         this.access.put(KEY_GRANTS, new JSONArray());
         this.access.put(KEY_REVOKES, new JSONArray());
+        this.files = new HashMap<String, AppstaxFile>();
     }
 
     public String getId() {
@@ -47,6 +54,14 @@ public final class AppstaxObject {
 
     public void put(String key, Object val) {
         this.properties.put(key, val);
+    }
+
+    public void put(String key, AppstaxFile file) {
+        JSONObject meta = new JSONObject();
+        meta.put(KEY_TYPE, TYPE_FILE);
+        meta.put(KEY_FILE, file.getName());
+        this.files.put(key, file);
+        this.put(key, meta);
     }
 
     public Object get(String key) {
@@ -83,21 +98,23 @@ public final class AppstaxObject {
     protected AppstaxObject save() {
         saveObject();
         saveAccess();
+        saveFiles();
         return this;
     }
 
-    private AppstaxObject saveObject() {
-        return this.getId() == null ?
-            this.post() :
-            this.put();
+    private void saveObject() {
+        if (this.getId() == null) {
+            this.createObject();
+        } else {
+            this.updateObject();
+        }
     }
 
-    private AppstaxObject saveAccess() {
+    private void saveAccess() {
         if (this.hasAccess()) {
             String path = AppstaxPaths.permissions();
             AppstaxClient.request(AppstaxClient.Method.POST, path, this.access);
         }
-        return this;
     }
 
     private boolean hasAccess() {
@@ -107,7 +124,20 @@ public final class AppstaxObject {
         );
     }
 
-    private AppstaxObject post() {
+    private void saveFiles() {
+        for (Map.Entry<String, AppstaxFile> item : this.files.entrySet()) {
+            String key = item.getKey();
+            String name = item.getValue().getName();
+            String data = item.getValue().getData();
+            String path = AppstaxPaths.file(this.getCollection(), this.getId(), key, name);
+
+            Map<String, String> form = new HashMap<String, String>();
+            form.put(KEY_DATA, data);
+            AppstaxClient.form(AppstaxClient.Method.PUT, path, form);
+        }
+    }
+
+    private AppstaxObject createObject() {
         String path = AppstaxPaths.collection(this.getCollection());
         JSONObject meta = AppstaxClient.request(AppstaxClient.Method.POST, path, this.properties);
         this.put(KEY_CREATED, meta.get(KEY_CREATED));
@@ -116,7 +146,7 @@ public final class AppstaxObject {
         return this;
     }
 
-    private AppstaxObject put() {
+    private AppstaxObject updateObject() {
         String path = AppstaxPaths.object(this.getCollection(), this.getId());
         JSONObject meta = AppstaxClient.request(AppstaxClient.Method.PUT, path, this.properties);
         this.put(KEY_UPDATED, meta.get(KEY_UPDATED));

@@ -29,6 +29,10 @@ abstract class AppstaxPaths {
         return "permissions";
     }
 
+    public static String file(String collection, String id, String key, String filename) {
+        return "files/" + collection + "/" + id + "/" + key + "/" + filename;
+    }
+
     public static String filter(String collection, String filter) {
         try {
             return AppstaxPaths.collection(collection) + "?filter=" + URLEncoder.encode(filter, "UTF-8");

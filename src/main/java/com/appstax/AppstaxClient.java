@@ -4,6 +4,7 @@ import com.squareup.okhttp.*;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Map;
 
 final class AppstaxClient {
 
@@ -11,61 +12,108 @@ final class AppstaxClient {
     private static final String ERROR_CODE = "errorCode";
     private static final String ERROR_MESSAGE = "errorMessage";
     private static final String ERROR_KEY = "Use Appstax.setAppKey(\"YourAppKey\") before making requests.";
-
     private static final String HEADER_APP_KEY = "x-appstax-appkey";
     private static final String HEADER_SESSION_ID = "x-appstax-sessionid";
     private static final String HEADER_TYPE_JSON = "application/json; charset=utf-8";
+    private static final String HEADER_TYPE_FORM = "multipart/form-data";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_ACCEPT = "Accept";
 
     private static OkHttpClient client = new OkHttpClient();
-    protected static enum Method { GET, PUT, POST, DELETE }
+
+    protected static enum Method {
+        GET,
+        PUT,
+        POST,
+        DELETE
+    }
 
     protected static JSONObject request(Method method, String path) {
         return request(method, path, null);
     }
 
     protected static JSONObject request(Method method, String path, JSONObject json) {
+        return execute(jsonRequest(method, path, json));
+    }
+
+    public static JSONObject form(Method method, String path, Map<String, String> form) {
+        return execute(formRequest(method, path, form));
+    }
+
+    private static JSONObject execute(Request req) {
         try {
-            Request req = build(method, path, json);
             Response res = client.newCall(req).execute();
             JSONObject body = parse(res.body().string());
-            check(res, body);
+            checkReturnCode(res, body);
             return body;
         } catch (IOException e) {
             throw new AppstaxException(e.getMessage(), e);
         }
     }
 
-    private static Request build(Method method, String path, JSONObject json) {
+    private static Request formRequest(Method method, String path, Map<String, String> form) {
+        Request.Builder req = new Request.Builder();
+        setPath(req, path);
+        setKeys(req);
 
-        if (Appstax.getAppKey() == "") {
-            throw new AppstaxException(ERROR_KEY);
+        req.addHeader(HEADER_CONTENT_TYPE, HEADER_TYPE_FORM);
+
+        MultipartBuilder multipart = new MultipartBuilder();
+        for (Map.Entry<String, String> item : form.entrySet()) {
+            multipart.addFormDataPart(item.getKey(), item.getValue());
         }
 
-        Request.Builder req = new Request.Builder()
-                .url(Appstax.getApiUrl() + path)
-                .addHeader(HEADER_APP_KEY, Appstax.getAppKey())
-                .addHeader(HEADER_CONTENT_TYPE, HEADER_TYPE_JSON)
-                .addHeader(HEADER_ACCEPT, HEADER_TYPE_JSON);
+        RequestBody body = multipart.build();
+        setBody(req, method, body);
+        return req.build();
+    }
 
-        if (Appstax.getCurrentUser() != null) {
-            req.addHeader(HEADER_SESSION_ID, Appstax.getCurrentUser().getSessionId());
-        }
+    private static Request jsonRequest(Method method, String path, JSONObject json) {
+        Request.Builder req = new Request.Builder();
+        setPath(req, path);
+        setKeys(req);
+
+        req.addHeader(HEADER_CONTENT_TYPE, HEADER_TYPE_JSON);
+        req.addHeader(HEADER_ACCEPT, HEADER_TYPE_JSON);
 
         String content = json != null ? json.toString() : "";
         MediaType media = MediaType.parse(HEADER_TYPE_JSON);
         RequestBody body = RequestBody.create(media, content);
+        setBody(req, method, body);
+        return req.build();
+    }
 
+    private static void setPath(Request.Builder req, String path) {
+        req.url(Appstax.getApiUrl() + path);
+    }
+
+    private static void setBody(Request.Builder req, Method method, RequestBody body) {
         if (method == Method.GET) req = req.get();
         if (method == Method.PUT) req = req.put(body);
         if (method == Method.POST) req = req.post(body);
         if (method == Method.DELETE) req = req.delete(body);
-
-        return req.build();
     }
 
-    private static void check(Response response, JSONObject json) {
+    private static void setKeys(Request.Builder req) {
+        setAppKey(req);
+        setSessionKey(req);
+    }
+
+    private static void setAppKey(Request.Builder req) {
+        if (Appstax.getAppKey() == "") {
+            throw new AppstaxException(ERROR_KEY);
+        } else {
+            req.addHeader(HEADER_APP_KEY, Appstax.getAppKey());
+        }
+    }
+
+    private static void setSessionKey(Request.Builder req) {
+        if (Appstax.getCurrentUser() != null) {
+            req.addHeader(HEADER_SESSION_ID, Appstax.getCurrentUser().getSessionId());
+        }
+    }
+
+    private static void checkReturnCode(Response response, JSONObject json) {
         if (!response.isSuccessful()) {
             throw new AppstaxException(
                 response.code(),
