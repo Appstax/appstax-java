@@ -1,0 +1,12 @@
+#!/usr/bin/env bash -eu
+# Temporary local "deploy"
+
+cd "$(dirname "$0")"/..
+
+SOURCE="target/appstax-java-1.0.0-jar-with-dependencies.jar"
+TARGET="../appstax-android/src/appstax/libs/appstax-java.jar"
+
+mvn package
+
+rm -f "$TARGET"
+cp "$SOURCE" "$TARGET"
