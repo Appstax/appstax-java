@@ -3,14 +3,13 @@ package com.appstax;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class AppstaxFileTest extends AppstaxTest {
+public class AxFileTest extends AxTest {
 
-    @Test
+    @org.junit.Test
     public void testFileSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
 
@@ -18,10 +17,10 @@ public class AppstaxFileTest extends AppstaxTest {
         server.enqueue(new MockResponse().setBody(""));
 
         String filename = "file-example-image.jpg";
-        AppstaxObject object = new AppstaxObject(COLLECTION_2);
-        AppstaxFile file = new AppstaxFile(filename, getResource(filename));
+        AxObject object = new AxObject(COLLECTION_2);
+        AxFile file = new AxFile(filename, getResource(filename));
         object.put("image", file);
-        Appstax.save(object);
+        Ax.save(object);
 
         RecordedRequest req1 = server.takeRequest();
         String body = "{\"image\":{\"sysDatatype\":\"file\",\"filename\":\"file-example-image.jpg\"}}";
@@ -37,7 +36,7 @@ public class AppstaxFileTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testMultiFileSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
         server.enqueue(new MockResponse().setBody(getResource("save-object-success.json")));
@@ -46,13 +45,13 @@ public class AppstaxFileTest extends AppstaxTest {
         server.enqueue(new MockResponse().setBody(""));
 
         String filename = "file-example-image.jpg";
-        AppstaxObject object = new AppstaxObject(COLLECTION_2);
+        AxObject object = new AxObject(COLLECTION_2);
 
-        object.put("image1", new AppstaxFile("file-example-image-1.jpg", getResource(filename)));
-        object.put("image2", new AppstaxFile("file-example-image-2.jpg", getResource(filename)));
-        object.put("image3", new AppstaxFile("file-example-image-3.jpg", getResource(filename)));
+        object.put("image1", new AxFile("file-example-image-1.jpg", getResource(filename)));
+        object.put("image2", new AxFile("file-example-image-2.jpg", getResource(filename)));
+        object.put("image3", new AxFile("file-example-image-3.jpg", getResource(filename)));
 
-        Appstax.save(object);
+        Ax.save(object);
 
         RecordedRequest req1 = server.takeRequest();
         RecordedRequest req2 = server.takeRequest();

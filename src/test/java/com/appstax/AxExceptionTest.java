@@ -2,20 +2,19 @@ package com.appstax;
 
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class AppstaxExceptionTest extends AppstaxTest {
+public class AxExceptionTest extends AxTest {
 
-    @Test
+    @org.junit.Test
     public void testSaveError() throws Exception {
         MockWebServer server = createMockWebServer();
         server.enqueue(new MockResponse().setBody(getResource("save-object-error.json")).setResponseCode(400));
 
         try {
-            Appstax.save(new AppstaxObject("c"));
-        } catch(AppstaxException e) {
+            Ax.save(new AxObject("c"));
+        } catch(AxException e) {
             assertEquals(400, e.getStatus());
             assertEquals("rzeop5miXOvMB", e.getId());
             assertEquals("ErrBadRequest", e.getCode());

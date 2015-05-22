@@ -1,13 +1,13 @@
 package com.appstax;
 
-final class AppstaxException extends RuntimeException {
+final class AxException extends RuntimeException {
 
     private int status;
     private String id;
     private String code;
     private String message;
 
-    public AppstaxException(int status, String id, String code, String message) {
+    public AxException(int status, String id, String code, String message) {
         super(message, null);
         this.status = status;
         this.id = id;
@@ -15,11 +15,11 @@ final class AppstaxException extends RuntimeException {
         this.message = message;
     }
 
-    public AppstaxException(String message, Throwable e) {
+    public AxException(String message, Throwable e) {
         super(message, e);
     }
 
-    public AppstaxException(String message) {
+    public AxException(String message) {
         super(message, null);
     }
 

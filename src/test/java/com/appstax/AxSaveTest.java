@@ -3,23 +3,22 @@ package com.appstax;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class AppstaxSaveTest extends AppstaxTest {
+public class AxSaveTest extends AxTest {
 
-    @Test
+    @org.junit.Test
     public void testSaveSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("save-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
 
-        AppstaxObject object = new AppstaxObject(COLLECTION_1);
+        AxObject object = new AxObject(COLLECTION_1);
         assertNull(object.getId());
         object.put(PROPERTY_1, "1");
 
-        Appstax.save(object);
+        Ax.save(object);
         assertNotNull(object.getId());
         assertEquals("1", object.get(PROPERTY_1));
 
@@ -31,26 +30,26 @@ public class AppstaxSaveTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test(expected=AppstaxException.class)
+    @org.junit.Test(expected=AxException.class)
     public void testSaveError() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("save-object-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
 
-        AppstaxObject object = new AppstaxObject(COLLECTION_1);
-        Appstax.save(object);
+        AxObject object = new AxObject(COLLECTION_1);
+        Ax.save(object);
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testUpdateSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
-        AppstaxObject object = getObject(server);
+        AxObject object = getObject(server);
 
         String body = getResource("save-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
         object.put(PROPERTY_1, "3");
-        Appstax.save(object);
+        Ax.save(object);
 
         RecordedRequest req = server.takeRequest();
         assertEquals(object.getId(), "123");
@@ -61,15 +60,15 @@ public class AppstaxSaveTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test(expected=AppstaxException.class)
+    @org.junit.Test(expected=AxException.class)
     public void testUpdateError() throws Exception {
         MockWebServer server = createMockWebServer();
-        AppstaxObject object = getObject(server);
+        AxObject object = getObject(server);
 
         String body = getResource("save-object-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
         object.put(PROPERTY_1, "3");
-        Appstax.save(object);
+        Ax.save(object);
 
         server.shutdown();
     }

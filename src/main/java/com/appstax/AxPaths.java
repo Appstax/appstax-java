@@ -3,7 +3,7 @@ package com.appstax;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-abstract class AppstaxPaths {
+abstract class AxPaths {
 
     protected static String users() {
         return "users";
@@ -22,7 +22,7 @@ abstract class AppstaxPaths {
     }
 
     protected static String object(String collection, String id) {
-        return AppstaxPaths.collection(collection) + "/" + id;
+        return AxPaths.collection(collection) + "/" + id;
     }
 
     protected static String permissions() {
@@ -35,9 +35,9 @@ abstract class AppstaxPaths {
 
     protected static String filter(String collection, String filter) {
         try {
-            return AppstaxPaths.collection(collection) + "?filter=" + URLEncoder.encode(filter, "UTF-8");
+            return AxPaths.collection(collection) + "?filter=" + URLEncoder.encode(filter, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw new AppstaxException(e.getMessage(), e);
+            throw new AxException(e.getMessage(), e);
         }
     }
 

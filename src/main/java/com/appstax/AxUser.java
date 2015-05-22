@@ -1,18 +1,18 @@
 package com.appstax;
 
-public final class AppstaxUser {
+public final class AxUser {
 
     private String sessionId = null;
     private String username = null;
-    private AppstaxObject object = null;
+    private AxObject object = null;
 
-    protected AppstaxUser(String username, String session, AppstaxObject object) {
+    protected AxUser(String username, String session, AxObject object) {
         this.username = username;
         this.sessionId = session;
         this.object = object;
     }
 
-    protected AppstaxObject getObject() {
+    protected AxObject getObject() {
         return this.object;
     }
 

@@ -6,12 +6,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Map;
 
-final class AppstaxClient {
+final class AxClient {
 
     private static final String ERROR_ID = "errorId";
     private static final String ERROR_CODE = "errorCode";
     private static final String ERROR_MESSAGE = "errorMessage";
-    private static final String ERROR_KEY = "Use Appstax.setAppKey(\"YourAppKey\") before making requests.";
+    private static final String ERROR_KEY = "Use Ax.setAppKey(\"YourAppKey\") before making requests.";
     private static final String HEADER_APP_KEY = "x-appstax-appkey";
     private static final String HEADER_SESSION_ID = "x-appstax-sessionid";
     private static final String HEADER_TYPE_JSON = "application/json; charset=utf-8";
@@ -47,7 +47,7 @@ final class AppstaxClient {
             checkReturnCode(res, body);
             return body;
         } catch (IOException e) {
-            throw new AppstaxException(e.getMessage(), e);
+            throw new AxException(e.getMessage(), e);
         }
     }
 
@@ -84,7 +84,7 @@ final class AppstaxClient {
     }
 
     private static void setPath(Request.Builder req, String path) {
-        req.url(Appstax.getApiUrl() + path);
+        req.url(Ax.getApiUrl() + path);
     }
 
     private static void setBody(Request.Builder req, Method method, RequestBody body) {
@@ -100,22 +100,22 @@ final class AppstaxClient {
     }
 
     private static void setAppKey(Request.Builder req) {
-        if (Appstax.getAppKey() == "") {
-            throw new AppstaxException(ERROR_KEY);
+        if (Ax.getAppKey() == "") {
+            throw new AxException(ERROR_KEY);
         } else {
-            req.addHeader(HEADER_APP_KEY, Appstax.getAppKey());
+            req.addHeader(HEADER_APP_KEY, Ax.getAppKey());
         }
     }
 
     private static void setSessionKey(Request.Builder req) {
-        if (Appstax.getCurrentUser() != null) {
-            req.addHeader(HEADER_SESSION_ID, Appstax.getCurrentUser().getSessionId());
+        if (Ax.getCurrentUser() != null) {
+            req.addHeader(HEADER_SESSION_ID, Ax.getCurrentUser().getSessionId());
         }
     }
 
     private static void checkReturnCode(Response response, JSONObject json) {
         if (!response.isSuccessful()) {
-            throw new AppstaxException(
+            throw new AxException(
                 response.code(),
                 json.getString(ERROR_ID),
                 json.getString(ERROR_CODE),

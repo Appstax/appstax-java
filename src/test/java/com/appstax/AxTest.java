@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 
-public abstract class AppstaxTest {
+public abstract class AxTest {
 
     public static final String APP_KEY_1 = "YourAppKey";
     public static final String APP_KEY_2 = "SomeAppKey";
@@ -26,13 +26,13 @@ public abstract class AppstaxTest {
 
     @Before
     public void before() {
-        Appstax.setAppKey(APP_KEY_1);
+        Ax.setAppKey(APP_KEY_1);
     }
 
     public MockWebServer createMockWebServer() throws IOException {
         MockWebServer mock = new MockWebServer();
         mock.start();
-        Appstax.setApiUrl(mock.getUrl("/").toString());
+        Ax.setApiUrl(mock.getUrl("/").toString());
         return mock;
     }
 
@@ -42,10 +42,10 @@ public abstract class AppstaxTest {
         return new String(encoded, StandardCharsets.UTF_8);
     }
 
-    public AppstaxObject getObject(MockWebServer server) throws Exception {
+    public AxObject getObject(MockWebServer server) throws Exception {
         String body = getResource("find-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
-        AppstaxObject object = Appstax.find(COLLECTION_1, "123");
+        AxObject object = Ax.find(COLLECTION_1, "123");
 
         RecordedRequest req = server.takeRequest();
         assertEquals("GET", req.getMethod());

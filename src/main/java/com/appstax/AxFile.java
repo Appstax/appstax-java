@@ -1,11 +1,11 @@
 package com.appstax;
 
-public class AppstaxFile {
+public class AxFile {
 
     private String name;
     private String data;
 
-    public AppstaxFile(String name, String data) {
+    public AxFile(String name, String data) {
         this.name = name;
         this.data = data;
     }

@@ -1,20 +1,18 @@
 package com.appstax;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
-public class AppstaxObjectTest extends AppstaxTest {
+public class AxObjectTest extends AxTest {
 
-    @Test
+    @org.junit.Test
     public void testCollection() {
-        AppstaxObject object = new AppstaxObject(COLLECTION_1);
+        AxObject object = new AxObject(COLLECTION_1);
         assertEquals(COLLECTION_1, object.getCollection());
     }
 
-    @Test
+    @org.junit.Test
     public void testProperties() {
-        AppstaxObject object = new AppstaxObject(COLLECTION_1);
+        AxObject object = new AxObject(COLLECTION_1);
         object.put(PROPERTY_1, 1);
         object.put(PROPERTY_2, 1.1);
         object.put(PROPERTY_3, "1");

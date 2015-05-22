@@ -3,18 +3,17 @@ package com.appstax;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
-import org.junit.Test;
 
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
-public class AppstaxPermissionsTest extends AppstaxTest {
+public class AxPermissionsTest extends AxTest {
 
-    @Test
+    @org.junit.Test
     public void permitPublicSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
-        AppstaxObject object = new AppstaxObject(COLLECTION_2);
+        AxObject object = new AxObject(COLLECTION_2);
 
         object.grant(new ArrayList<String>() {{
             add("read");
@@ -44,10 +43,10 @@ public class AppstaxPermissionsTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void permitUserSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
-        AppstaxObject object = new AppstaxObject(COLLECTION_2);
+        AxObject object = new AxObject(COLLECTION_2);
 
         object.grant("foo", new ArrayList<String>() {{
             add("update");

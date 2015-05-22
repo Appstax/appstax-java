@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class AppstaxObject {
+public final class AxObject {
 
     private static final String KEY_CREATED = "sysCreated";
     private static final String KEY_UPDATED = "sysUpdated";
@@ -24,19 +24,19 @@ public final class AppstaxObject {
     private String collection;
     private JSONObject properties;
     private JSONObject access;
-    private Map<String, AppstaxFile> files;
+    private Map<String, AxFile> files;
 
-    public AppstaxObject(String collection) {
+    public AxObject(String collection) {
         this(collection, new JSONObject());
     }
 
-    public AppstaxObject(String collection, JSONObject properties) {
+    public AxObject(String collection, JSONObject properties) {
         this.collection = collection;
         this.properties = properties;
         this.access = new JSONObject();
         this.access.put(KEY_GRANTS, new JSONArray());
         this.access.put(KEY_REVOKES, new JSONArray());
-        this.files = new HashMap<String, AppstaxFile>();
+        this.files = new HashMap<String, AxFile>();
     }
 
     public String getId() {
@@ -53,7 +53,7 @@ public final class AppstaxObject {
         this.properties.put(key, val);
     }
 
-    public void put(String key, AppstaxFile file) {
+    public void put(String key, AxFile file) {
         JSONObject meta = new JSONObject();
         meta.put(KEY_TYPE, TYPE_FILE);
         meta.put(KEY_FILE, file.getName());
@@ -67,38 +67,38 @@ public final class AppstaxObject {
             null;
     }
 
-    public AppstaxObject grant(List<String> permissions) {
+    public AxObject grant(List<String> permissions) {
         return this.grant("*", permissions);
     }
 
-    public AppstaxObject grant(String username, List<String> permissions) {
+    public AxObject grant(String username, List<String> permissions) {
         return this.permission(KEY_GRANTS, username, permissions);
     }
 
-    public AppstaxObject revoke(List<String> permissions) {
+    public AxObject revoke(List<String> permissions) {
         return this.revoke("*", permissions);
     }
 
-    public AppstaxObject revoke(String username, List<String> permissions) {
+    public AxObject revoke(String username, List<String> permissions) {
         return this.permission(KEY_REVOKES, username, permissions);
     }
 
-    protected AppstaxObject save() {
+    protected AxObject save() {
         saveObject();
         saveAccess();
         saveFiles();
         return this;
     }
 
-    protected AppstaxObject remove() {
-        String path = AppstaxPaths.object(this.getCollection(), this.getId());
-        this.properties = AppstaxClient.request(AppstaxClient.Method.DELETE, path);
+    protected AxObject remove() {
+        String path = AxPaths.object(this.getCollection(), this.getId());
+        this.properties = AxClient.request(AxClient.Method.DELETE, path);
         return this;
     }
 
-    protected AppstaxObject refresh() {
-        String path = AppstaxPaths.object(this.getCollection(), this.getId());
-        this.properties = AppstaxClient.request(AppstaxClient.Method.GET, path);
+    protected AxObject refresh() {
+        String path = AxPaths.object(this.getCollection(), this.getId());
+        this.properties = AxClient.request(AxClient.Method.GET, path);
         return this;
     }
 
@@ -112,8 +112,8 @@ public final class AppstaxObject {
 
     private void saveAccess() {
         if (this.hasAccess()) {
-            String path = AppstaxPaths.permissions();
-            AppstaxClient.request(AppstaxClient.Method.POST, path, this.access);
+            String path = AxPaths.permissions();
+            AxClient.request(AxClient.Method.POST, path, this.access);
         }
     }
 
@@ -124,23 +124,23 @@ public final class AppstaxObject {
         );
     }
 
-    private AppstaxObject createObject() {
-        String path = AppstaxPaths.collection(this.getCollection());
-        JSONObject meta = AppstaxClient.request(AppstaxClient.Method.POST, path, this.properties);
+    private AxObject createObject() {
+        String path = AxPaths.collection(this.getCollection());
+        JSONObject meta = AxClient.request(AxClient.Method.POST, path, this.properties);
         this.put(KEY_CREATED, meta.get(KEY_CREATED));
         this.put(KEY_UPDATED, meta.get(KEY_UPDATED));
         this.put(KEY_ID, meta.get(KEY_ID));
         return this;
     }
 
-    private AppstaxObject updateObject() {
-        String path = AppstaxPaths.object(this.getCollection(), this.getId());
-        JSONObject meta = AppstaxClient.request(AppstaxClient.Method.PUT, path, this.properties);
+    private AxObject updateObject() {
+        String path = AxPaths.object(this.getCollection(), this.getId());
+        JSONObject meta = AxClient.request(AxClient.Method.PUT, path, this.properties);
         this.put(KEY_UPDATED, meta.get(KEY_UPDATED));
         return this;
     }
 
-    private AppstaxObject permission(String type, String username, List<String> permissions) {
+    private AxObject permission(String type, String username, List<String> permissions) {
         JSONObject grant = new JSONObject();
         grant.put(KEY_ID, this.getId());
         grant.put(KEY_USER, username);
@@ -150,15 +150,15 @@ public final class AppstaxObject {
     }
 
     private void saveFiles() {
-        for (Map.Entry<String, AppstaxFile> item : this.files.entrySet()) {
+        for (Map.Entry<String, AxFile> item : this.files.entrySet()) {
             String key = item.getKey();
             String name = item.getValue().getName();
             String data = item.getValue().getData();
-            String path = AppstaxPaths.file(this.getCollection(), this.getId(), key, name);
+            String path = AxPaths.file(this.getCollection(), this.getId(), key, name);
 
             Map<String, String> form = new HashMap<String, String>();
             form.put(KEY_DATA, data);
-            AppstaxClient.form(AppstaxClient.Method.PUT, path, form);
+            AxClient.form(AxClient.Method.PUT, path, form);
         }
     }
 

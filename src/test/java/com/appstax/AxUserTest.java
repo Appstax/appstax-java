@@ -4,25 +4,24 @@ import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.junit.Before;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class AppstaxUserTest extends AppstaxTest {
+public class AxUserTest extends AxTest {
 
     @Before
     public void testCurrentUser() throws Exception {
-        assertEquals(null, Appstax.getCurrentUser());
+        assertEquals(null, Ax.getCurrentUser());
     }
 
-    @Test
+    @org.junit.Test
     public void testSignupSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("user-signup-success.json");
         server.enqueue(new MockResponse().setBody(body));
 
-        Appstax.signup("foo", "bar");
+        Ax.signup("foo", "bar");
         checkCurrentUser("foo");
 
         RecordedRequest req = server.takeRequest();
@@ -33,24 +32,24 @@ public class AppstaxUserTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test(expected=AppstaxException.class)
+    @org.junit.Test(expected=AxException.class)
     public void testSignupError() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("user-signup-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
 
-        Appstax.signup("foo", "bar");
-        assertEquals(null, Appstax.getCurrentUser());
+        Ax.signup("foo", "bar");
+        assertEquals(null, Ax.getCurrentUser());
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testLoginSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("user-login-success.json");
         server.enqueue(new MockResponse().setBody(body));
 
-        Appstax.login("baz", "boo");
+        Ax.login("baz", "boo");
         checkCurrentUser("baz");
 
         RecordedRequest req = server.takeRequest();
@@ -61,37 +60,37 @@ public class AppstaxUserTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testLoginError() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("user-login-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
 
         try {
-            Appstax.login("foo", "bar");
-        } catch (AppstaxException e) {
+            Ax.login("foo", "bar");
+        } catch (AxException e) {
             assertEquals("Invalid username and/or password", e.getMessage());
         }
 
-        assertEquals(null, Appstax.getCurrentUser());
+        assertEquals(null, Ax.getCurrentUser());
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testLogoutSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
 
         String body = getResource("user-login-success.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(204));
-        Appstax.login("baz", "boo");
+        Ax.login("baz", "boo");
         checkCurrentUser("baz");
         RecordedRequest req = server.takeRequest();
         assertEquals("/sessions", req.getPath());
 
         server.enqueue(new MockResponse().setBody("").setResponseCode(204));
-        Appstax.logout();
+        Ax.logout();
 
-        assertEquals(null, Appstax.getCurrentUser());
+        assertEquals(null, Ax.getCurrentUser());
         req = server.takeRequest();
         assertEquals("DELETE", req.getMethod());
         assertTrue(req.getPath().startsWith("/sessions/"));
@@ -99,25 +98,25 @@ public class AppstaxUserTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testPropertiesSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
 
         String body = getResource("user-login-success.json");
         server.enqueue(new MockResponse().setBody(body));
-        Appstax.login("foo", "bar");
+        Ax.login("foo", "bar");
         checkCurrentUser("foo");
 
-        AppstaxUser user = Appstax.getCurrentUser();
+        AxUser user = Ax.getCurrentUser();
         user.put("1", "2");
         assertEquals("2", user.get("1"));
 
         body = getResource("save-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
-        Appstax.save(user);
+        Ax.save(user);
 
         assertEquals("2", user.get("1"));
-        assertEquals("2", Appstax.getCurrentUser().get("1"));
+        assertEquals("2", Ax.getCurrentUser().get("1"));
 
         logout(server);
         server.shutdown();
@@ -125,13 +124,13 @@ public class AppstaxUserTest extends AppstaxTest {
 
     public void logout(MockWebServer server) throws Exception {
         server.enqueue(new MockResponse().setBody(""));
-        Appstax.logout();
-        assertEquals(null, Appstax.getCurrentUser());
+        Ax.logout();
+        assertEquals(null, Ax.getCurrentUser());
     }
 
     public void checkCurrentUser(String name) {
-        assertEquals(name, Appstax.getCurrentUser().getUsername());
-        assertTrue(Appstax.getCurrentUser().getSessionId().length() > 0);
+        assertEquals(name, Ax.getCurrentUser().getUsername());
+        assertTrue(Ax.getCurrentUser().getSessionId().length() > 0);
     }
 
 }

@@ -3,19 +3,18 @@ package com.appstax;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class AppstaxQueryTest extends AppstaxTest {
+public class AxQueryTest extends AxTest {
 
-    @Test
+    @org.junit.Test
     public void testFindOneSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
-        AppstaxObject object = getObject(server);
+        AxObject object = getObject(server);
 
         assertEquals("123", object.getId());
         assertEquals("1", object.get("title"));
@@ -24,23 +23,23 @@ public class AppstaxQueryTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test(expected=AppstaxException.class)
+    @org.junit.Test(expected=AxException.class)
     public void testFindOneError() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-object-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(404));
 
-        AppstaxObject object = Appstax.find(COLLECTION_1, "404");
+        AxObject object = Ax.find(COLLECTION_1, "404");
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testFindAllSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-objects-success.json");
         server.enqueue(new MockResponse().setBody(body));
 
-        List<AppstaxObject> objects = Appstax.find(COLLECTION_1);
+        List<AxObject> objects = Ax.find(COLLECTION_1);
         assertEquals(3, objects.size());
         assertEquals("1", objects.get(0).get("title"));
         assertEquals("3", objects.get(2).get("title"));
@@ -48,13 +47,13 @@ public class AppstaxQueryTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testFilterString() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-objects-success.json");
         server.enqueue(new MockResponse().setBody(body));
 
-        List<AppstaxObject> objects = Appstax.filter(COLLECTION_1, "Age > 42 and name like 'Alex%'");
+        List<AxObject> objects = Ax.filter(COLLECTION_1, "Age > 42 and name like 'Alex%'");
         assertEquals(3, objects.size());
 
         RecordedRequest req = server.takeRequest();
@@ -67,7 +66,7 @@ public class AppstaxQueryTest extends AppstaxTest {
         server.shutdown();
     }
 
-    @Test
+    @org.junit.Test
     public void testFilterProperties() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-objects-success.json");
@@ -76,7 +75,7 @@ public class AppstaxQueryTest extends AppstaxTest {
         HashMap properties = new HashMap<String, String>();
         properties.put("foo", "b r");
 
-        List<AppstaxObject> objects = Appstax.filter(COLLECTION_1, properties);
+        List<AxObject> objects = Ax.filter(COLLECTION_1, properties);
         assertEquals(3, objects.size());
 
         RecordedRequest req = server.takeRequest();

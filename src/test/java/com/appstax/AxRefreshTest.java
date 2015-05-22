@@ -3,20 +3,19 @@ package com.appstax;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class AppstaxRefreshTest extends AppstaxTest {
+public class AxRefreshTest extends AxTest {
 
-    @Test
+    @org.junit.Test
     public void testFindOneSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
-        AppstaxObject object = getObject(server);
+        AxObject object = getObject(server);
 
         String body = getResource("find-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
-        Appstax.refresh(object);
+        Ax.refresh(object);
 
         RecordedRequest req = server.takeRequest();
         assertEquals("GET", req.getMethod());
