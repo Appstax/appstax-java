@@ -11,7 +11,7 @@ final class AxClient {
     private static final String ERROR_ID = "errorId";
     private static final String ERROR_CODE = "errorCode";
     private static final String ERROR_MESSAGE = "errorMessage";
-    private static final String ERROR_KEY = "Use Ax.setAppKey(\"YourAppKey\") before making requests.";
+    private static final String ERROR_KEY = "Set the app key before making requests.";
     private static final String HEADER_APP_KEY = "x-appstax-appkey";
     private static final String HEADER_SESSION_ID = "x-appstax-sessionid";
     private static final String HEADER_TYPE_JSON = "application/json; charset=utf-8";
