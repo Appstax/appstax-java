@@ -2,7 +2,7 @@ package com.appstax;
 
 import org.json.JSONObject;
 
-public class AxFile {
+public final class AxFile {
 
     private String name;
     private String data;

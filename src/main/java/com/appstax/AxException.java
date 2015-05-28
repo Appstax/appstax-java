@@ -1,6 +1,6 @@
 package com.appstax;
 
-final class AxException extends RuntimeException {
+public final class AxException extends RuntimeException {
 
     private int status;
     private String id;
