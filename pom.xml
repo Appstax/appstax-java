@@ -25,6 +25,15 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <name>Karl-Erik Ronsen</name>
+            <email>karl-erik@appstax.com</email>
+            <organization>Appstax</organization>
+            <organizationUrl>https://appstax.com</organizationUrl>
+        </developer>
+    </developers>
+
     <scm>
         <url>https://github.com/Appstax/appstax-java</url>
         <connection>scm:git:git@github.com:Appstax/appstax-java.git</connection>
