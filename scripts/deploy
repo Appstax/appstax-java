@@ -4,9 +4,11 @@
 cd "$(dirname "$0")"/..
 
 SOURCE="target/appstax-java-1.0.0-jar-with-dependencies.jar"
-TARGET="../appstax-android/src/appstax/libs/appstax-java.jar"
+TARGET1="dist/appstax-java.jar"
+TARGET2="../appstax-android/src/appstax/libs/appstax-java.jar"
 
 mvn package
 
-rm -f "$TARGET"
-cp "$SOURCE" "$TARGET"
+rm -f "$TARGET1" "$TARGET2"
+cp "$SOURCE" "$TARGET1"
+cp "$SOURCE" "$TARGET2"
