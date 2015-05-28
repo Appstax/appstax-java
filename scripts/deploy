@@ -1,14 +1,15 @@
 #!/usr/bin/env bash -eu
-# Temporary local "deploy"
+# Local development deploy
 
 cd "$(dirname "$0")"/..
 
 SOURCE="target/appstax-java-1.0.0-jar-with-dependencies.jar"
-TARGET1="dist/appstax-java.jar"
-TARGET2="../appstax-android/src/appstax/libs/appstax-java.jar"
+TARGET="appstax-java.jar"
+
+JAVASDK="dist/$TARGET"
+ANDROID="../appstax-android/src/appstax/libs/$TARGET"
 
 mvn package
 
-rm -f "$TARGET1" "$TARGET2"
-cp "$SOURCE" "$TARGET1"
-cp "$SOURCE" "$TARGET2"
+cp $SOURCE $JAVASDK
+cp $SOURCE $ANDROID
