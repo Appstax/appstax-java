@@ -39,14 +39,25 @@ public final class AxObject {
         this.files = new HashMap<String, AxFile>();
     }
 
+    public String getCollection() {
+        return this.collection;
+    }
+
+    public Object get(String key) {
+        return this.properties.has(key) ?
+                this.properties.get(key) :
+                null;
+    }
+
     public String getId() {
         return this.properties.has(KEY_ID) ?
             this.properties.getString(KEY_ID) :
             null;
     }
 
-    public String getCollection() {
-        return this.collection;
+    public AxFile getFile(String key) {
+        JSONObject meta = this.properties.getJSONObject(key);
+        return new AxFile(meta);
     }
 
     public void put(String key, Object val) {
@@ -59,12 +70,6 @@ public final class AxObject {
         meta.put(KEY_FILE, file.getName());
         this.files.put(key, file);
         this.put(key, meta);
-    }
-
-    public Object get(String key) {
-        return this.properties.has(key) ?
-            this.properties.get(key) :
-            null;
     }
 
     public AxObject grant(List<String> permissions) {

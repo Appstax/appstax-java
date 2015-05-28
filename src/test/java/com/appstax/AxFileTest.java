@@ -4,13 +4,12 @@ import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class AxFileTest extends AxTest {
 
     @org.junit.Test
-    public void testFileSuccess() throws Exception {
+    public void testFileUploadSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
 
         server.enqueue(new MockResponse().setBody(getResource("save-object-success.json")));
@@ -37,7 +36,7 @@ public class AxFileTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testMultiFileSuccess() throws Exception {
+    public void testMultiFileUploadSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
         server.enqueue(new MockResponse().setBody(getResource("save-object-success.json")));
         server.enqueue(new MockResponse().setBody(""));
@@ -65,4 +64,45 @@ public class AxFileTest extends AxTest {
 
         server.shutdown();
     }
+
+    @org.junit.Test
+    public void testFileGetSuccess() throws Exception {
+        MockWebServer server = createMockWebServer();
+        server.enqueue(new MockResponse().setBody(getResource("find-file-success.json")));
+
+        AxObject object = Ax.find(COLLECTION_1, "123");
+        AxFile file = object.getFile("file");
+
+        RecordedRequest req = server.takeRequest();
+        assertEquals("GET", req.getMethod());
+        assertEquals("file-example-image.jpg", file.getName());
+        assertEquals("files/FileCollection/opgklDfL0Y4Q/file/file-example-image.jpg", file.getUrl());
+        assertNull(file.getData());
+
+        server.enqueue(new MockResponse().setBody(getResource("file-example-image.jpg")));
+        file.load();
+        assertNotNull(file.getData());
+
+        req = server.takeRequest();
+        assertEquals("GET", req.getMethod());
+        assertEquals(Ax.getAppKey(), req.getHeader("x-appstax-appkey"));
+
+        server.shutdown();
+    }
+
+    @org.junit.Test(expected=AxException.class)
+    public void testFileGetError() throws Exception {
+        MockWebServer server = createMockWebServer();
+        server.enqueue(new MockResponse().setBody(getResource("find-file-success.json")));
+
+        AxObject object = Ax.find(COLLECTION_1, "123");
+        AxFile file = object.getFile("file");
+        assertNull(file.getData());
+
+        server.enqueue(new MockResponse().setBody(getResource("find-object-error.json")).setResponseCode(400));
+
+        file.load();
+        server.shutdown();
+    }
+
 }

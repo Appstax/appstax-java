@@ -33,22 +33,41 @@ final class AxClient {
     }
 
     protected static JSONObject request(Method method, String path, JSONObject json) {
-        return execute(jsonRequest(method, path, json));
+        return parse(execute(jsonRequest(method, path, json)));
     }
 
     protected static JSONObject form(Method method, String path, Map<String, String> form) {
-        return execute(formRequest(method, path, form));
+        return parse(execute(formRequest(method, path, form)));
     }
 
-    private static JSONObject execute(Request req) {
+    protected static String file(Method method, String path) {
+        return execute(fileRequest(method, path));
+    }
+
+    private static String execute(Request req) {
         try {
             Response res = client.newCall(req).execute();
-            JSONObject body = parse(res.body().string());
+            String body = res.body().string();
             checkReturnCode(res, body);
             return body;
         } catch (IOException e) {
             throw new AxException(e.getMessage(), e);
         }
+    }
+
+    private static Request jsonRequest(Method method, String path, JSONObject json) {
+        Request.Builder req = new Request.Builder();
+        setPath(req, path);
+        setKeys(req);
+
+        req.addHeader(HEADER_CONTENT_TYPE, HEADER_TYPE_JSON);
+        req.addHeader(HEADER_ACCEPT, HEADER_TYPE_JSON);
+
+        String content = json != null ? json.toString() : "";
+        MediaType media = MediaType.parse(HEADER_TYPE_JSON);
+        RequestBody body = RequestBody.create(media, content);
+        setBody(req, method, body);
+        return req.build();
     }
 
     private static Request formRequest(Method method, String path, Map<String, String> form) {
@@ -68,30 +87,15 @@ final class AxClient {
         return req.build();
     }
 
-    private static Request jsonRequest(Method method, String path, JSONObject json) {
+    private static Request fileRequest(Method method, String path) {
         Request.Builder req = new Request.Builder();
         setPath(req, path);
         setKeys(req);
-
-        req.addHeader(HEADER_CONTENT_TYPE, HEADER_TYPE_JSON);
-        req.addHeader(HEADER_ACCEPT, HEADER_TYPE_JSON);
-
-        String content = json != null ? json.toString() : "";
-        MediaType media = MediaType.parse(HEADER_TYPE_JSON);
-        RequestBody body = RequestBody.create(media, content);
-        setBody(req, method, body);
         return req.build();
     }
 
     private static void setPath(Request.Builder req, String path) {
         req.url(Ax.getApiUrl() + path);
-    }
-
-    private static void setBody(Request.Builder req, Method method, RequestBody body) {
-        if (method == Method.GET) req = req.get();
-        if (method == Method.PUT) req = req.put(body);
-        if (method == Method.POST) req = req.post(body);
-        if (method == Method.DELETE) req = req.delete(body);
     }
 
     private static void setKeys(Request.Builder req) {
@@ -113,8 +117,17 @@ final class AxClient {
         }
     }
 
-    private static void checkReturnCode(Response response, JSONObject json) {
+    private static void setBody(Request.Builder req, Method method, RequestBody body) {
+        if (method == Method.GET) req = req.get();
+        if (method == Method.PUT) req = req.put(body);
+        if (method == Method.POST) req = req.post(body);
+        if (method == Method.DELETE) req = req.delete(body);
+    }
+
+    private static void checkReturnCode(Response response, String body) {
         if (!response.isSuccessful()) {
+            JSONObject json = parse(body);
+
             throw new AxException(
                 response.code(),
                 json.getString(ERROR_ID),

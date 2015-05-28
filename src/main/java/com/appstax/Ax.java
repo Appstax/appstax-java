@@ -37,6 +37,10 @@ public abstract class Ax {
         return object.refresh();
     }
 
+    public static AxFile load(AxFile file) {
+        return file.load();
+    }
+
     public static AxObject find(String collection, String id) {
         return AxQuery.find(collection, id);
     }
