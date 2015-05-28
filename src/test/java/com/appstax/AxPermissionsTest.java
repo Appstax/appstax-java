@@ -4,8 +4,6 @@ import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
-import java.util.ArrayList;
-
 import static org.junit.Assert.assertEquals;
 
 public class AxPermissionsTest extends AxTest {
@@ -15,14 +13,8 @@ public class AxPermissionsTest extends AxTest {
         MockWebServer server = createMockWebServer();
         AxObject object = new AxObject(COLLECTION_2);
 
-        object.grant(new ArrayList<String>() {{
-            add("read");
-            add("update");
-        }});
-
-        object.revoke(new ArrayList<String>(){{
-            add("delete");
-        }});
+        object.grantPublic("read", "update");
+        object.revokePublic("delete");
 
         String body = getResource("save-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
@@ -48,14 +40,8 @@ public class AxPermissionsTest extends AxTest {
         MockWebServer server = createMockWebServer();
         AxObject object = new AxObject(COLLECTION_2);
 
-        object.grant("foo", new ArrayList<String>() {{
-            add("update");
-        }});
-
-        object.revoke("bar", new ArrayList<String>(){{
-            add("read");
-            add("delete");
-        }});
+        object.grant("foo", "update");
+        object.revoke("bar", "read", "delete");
 
         String body = getResource("save-object-success.json");
         server.enqueue(new MockResponse().setBody(body));

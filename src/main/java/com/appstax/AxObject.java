@@ -4,7 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public final class AxObject {
@@ -72,19 +71,19 @@ public final class AxObject {
         this.put(key, meta);
     }
 
-    public AxObject grant(List<String> permissions) {
-        return this.grant("*", permissions);
+    public AxObject grantPublic(String... permissions) {
+        return this.permission(KEY_GRANTS, "*", permissions);
     }
 
-    public AxObject grant(String username, List<String> permissions) {
+    public AxObject grant(String username, String... permissions) {
         return this.permission(KEY_GRANTS, username, permissions);
     }
 
-    public AxObject revoke(List<String> permissions) {
-        return this.revoke("*", permissions);
+    public AxObject revokePublic(String... permissions) {
+        return this.permission(KEY_REVOKES, "*", permissions);
     }
 
-    public AxObject revoke(String username, List<String> permissions) {
+    public AxObject revoke(String username, String... permissions) {
         return this.permission(KEY_REVOKES, username, permissions);
     }
 
@@ -145,12 +144,14 @@ public final class AxObject {
         return this;
     }
 
-    private AxObject permission(String type, String username, List<String> permissions) {
-        JSONObject grant = new JSONObject();
-        grant.put(KEY_ID, this.getId());
-        grant.put(KEY_USER, username);
-        grant.put(KEY_PERMISSIONS, new JSONArray(permissions));
-        this.access.getJSONArray(type).put(grant);
+    private AxObject permission(String type, String username, String[] permissions) {
+        if (permissions.length > 0) {
+            JSONObject grant = new JSONObject();
+            grant.put(KEY_ID, this.getId());
+            grant.put(KEY_USER, username);
+            grant.put(KEY_PERMISSIONS, new JSONArray(permissions));
+            this.access.getJSONArray(type).put(grant);
+        }
         return this;
     }
 
