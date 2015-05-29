@@ -3,9 +3,15 @@
 
 cd "$(dirname "$0")"/..
 
-# Version number
-[[ "$#" -ne 1 ]] && { echo "Usage: $ deploy <a.b.c>"; exit 1; }
-VERSION="$1"
+# Get version
+VERSION=$(mvn help:evaluate -Dexpression=project.version | grep -v "^\[" | sed 's/-.*//')
+
+# Confirmation
+read -p "Publish version $VERSION? [y/n] " reply
+case $reply in
+    y) echo "Publishing...";;
+    *) exit 1 ;;
+esac
 
 # Env vars
 [ -z "$BINTRAY_USER" ] && { echo "Missing env var BINTRAY_USER"; exit 1; }
