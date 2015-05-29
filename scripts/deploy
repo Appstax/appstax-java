@@ -21,7 +21,7 @@ curl -s -X POST "$URL/packages/appstax/maven/appstax-java/versions" \
 -d "{\"name\":\"$VERSION\"}" > /dev/null
 
 # Deploy release
-mvn -s settings.xml release:prepare
+mvn -s settings.xml --batch-mode -Dtag="v$VERSION" -DreleaseVersion="$VERSION" release:prepare
 mvn -s settings.xml release:perform
 
 # Publish release
