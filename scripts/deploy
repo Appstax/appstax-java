@@ -12,8 +12,8 @@ VERSION="$1"
 [ -z "$BINTRAY_KEY" ]  && { echo "Missing env var BINTRAY_KEY"; exit 1; }
 URL="https://$BINTRAY_USER:$BINTRAY_KEY@api.bintray.com"
 
-# Run tests
-mvn test
+# Ensure latest version
+git pull
 
 # Create version
 curl -s -X POST "$URL/packages/appstax/maven/appstax-java/versions" \
@@ -26,3 +26,6 @@ mvn -s settings.xml release:perform
 
 # Publish release
 curl -s -X POST "$URL/content/appstax/maven/appstax-java/$VERSION/publish" > /dev/null
+
+# Push release commits
+git push
