@@ -1,4 +1,6 @@
-# Appstax Java SDK
+# Appstax Java SDK 
+
+[![Build Status](https://travis-ci.org/Appstax/appstax-java.svg?branch=master)](https://travis-ci.org/Appstax/appstax-java)
 
 This is the official Java SDK for [Appstax](https://appstax.com).
 
