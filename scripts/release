@@ -1,5 +1,5 @@
 #!/usr/bin/env bash -e
-# Deploy to Bintray
+# Release to Bintray
 
 cd "$(dirname "$0")"/..
 
