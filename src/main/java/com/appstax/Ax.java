@@ -3,7 +3,7 @@ package com.appstax;
 import java.util.List;
 import java.util.Map;
 
-public abstract class Ax {
+public class Ax {
 
     private static String appKey = "";
     private static String apiUrl = "https://appstax.com/api/latest/";

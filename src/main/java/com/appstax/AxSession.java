@@ -2,7 +2,7 @@ package com.appstax;
 
 import org.json.JSONObject;
 
-abstract class AxSession {
+final class AxSession {
 
     private static final String KEY_SESSIONID = "sysSessionId";
     private static final String KEY_USERNAME = "sysUsername";

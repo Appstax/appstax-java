@@ -3,7 +3,7 @@ package com.appstax;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-abstract class AxPaths {
+final class AxPaths {
 
     protected static String users() {
         return "users";

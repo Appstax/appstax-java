@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-abstract class AxQuery {
+final class AxQuery {
 
     private static final String KEY_OBJECTS = "objects";
     private static final String OPERATOR = " and ";
