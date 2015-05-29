@@ -15,11 +15,13 @@ VERSION="$1"
 URL="https://$BINTRAY_USER:$BINTRAY_KEY@api.bintray.com"
 
 # Create version
-curl -X POST "$URL/packages/appstax/maven/appstax-java/versions" -H "Content-Type:application/json" -d "{\"name\":\"$VERSION\"}"
+curl -X POST "$URL/packages/appstax/maven/appstax-java/versions" \
+-H "Content-Type:application/json" \
+-d "{\"name\":\"$VERSION\"}" > /dev/null
 
 # Create release
 mvn -s settings.xml release:prepare
 mvn -s settings.xml release:perform
 
 # Publish release
-curl -X POST "$URL/content/appstax/maven/appstax-java/$VERSION/publish"
+curl -X POST "$URL/content/appstax/maven/appstax-java/$VERSION/publish" > /dev/null
