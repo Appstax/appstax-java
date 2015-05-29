@@ -1,0 +1,7 @@
+#!/usr/bin/env bash -eu
+# Deploy to Bintray
+
+cd "$(dirname "$0")"/..
+
+mvn -s settings.xml release:prepare
+mvn -s settings.xml release:perform
