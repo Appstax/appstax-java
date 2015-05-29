@@ -12,8 +12,8 @@ VERSION="$1"
 [ -z "$BINTRAY_KEY" ]  && { echo "Missing env var BINTRAY_KEY"; exit 1; }
 URL="https://$BINTRAY_USER:$BINTRAY_KEY@api.bintray.com"
 
-# Ensure latest version
-git pull
+# Check git status
+[ -n "$(git status --porcelain)" ] && { echo "Unclean repo"; exit 1; }
 
 # Create version
 curl -s -X POST "$URL/packages/appstax/maven/appstax-java/versions" \
