@@ -7,7 +7,7 @@
     <groupId>com.appstax</groupId>
     <artifactId>appstax-java</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>0.0.1-SNAPSHOT</version>
     <name>appstax-java</name>
     <description>Appstax for Java</description>
     <url>https://github.com/Appstax/appstax-java</url>
@@ -38,6 +38,7 @@
         <url>https://github.com/Appstax/appstax-java</url>
         <connection>scm:git:git@github.com:Appstax/appstax-java.git</connection>
         <developerConnection>scm:git:git@github.com:Appstax/appstax-java.git</developerConnection>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
@@ -67,7 +68,6 @@
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -77,36 +77,55 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <distributionManagement>
+        <repository>
+            <id>appstax-java</id>
+            <url>https://api.bintray.com/maven/appstax/maven/appstax-java</url>
+        </repository>
+    </distributionManagement>
 
 </project>
