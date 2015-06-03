@@ -1,10 +1,11 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash -eu
 # Release to Bintray
 
 cd "$(dirname "$0")"/..
 
-# Get version
+# Config
 VERSION=$(mvn help:evaluate -Dexpression=project.version | grep -v "^\[" | sed 's/-.*//')
+BINTRAY="https://$BINTRAY_USER:$BINTRAY_KEY@api.bintray.com"
 
 # Confirmation
 read -p "Publish version $VERSION? [y/n] " reply
@@ -13,16 +14,11 @@ case $reply in
     *) exit 1 ;;
 esac
 
-# Env vars
-[ -z "$BINTRAY_USER" ] && { echo "Missing env var BINTRAY_USER"; exit 1; }
-[ -z "$BINTRAY_KEY" ]  && { echo "Missing env var BINTRAY_KEY"; exit 1; }
-URL="https://$BINTRAY_USER:$BINTRAY_KEY@api.bintray.com"
-
 # Check git status
 [ -n "$(git status --porcelain)" ] && { echo "Unclean repo"; exit 1; }
 
 # Create version
-curl -s -X POST "$URL/packages/appstax/maven/appstax-java/versions" \
+curl -s -X POST "$BINTRAY/packages/appstax/maven/appstax-java/versions" \
 -H "Content-Type:application/json" \
 -d "{\"name\":\"$VERSION\"}" > /dev/null
 
@@ -31,7 +27,7 @@ mvn -s settings.xml --batch-mode -Dtag="v$VERSION" -DreleaseVersion="$VERSION" r
 mvn -s settings.xml release:perform
 
 # Publish release
-curl -s -X POST "$URL/content/appstax/maven/appstax-java/$VERSION/publish" > /dev/null
+curl -s -X POST "$BINTRAY/content/appstax/maven/appstax-java/$VERSION/publish" > /dev/null
 
 # Push release commits
 git push
