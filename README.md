@@ -7,7 +7,7 @@ This is the official Java SDK for [Appstax](https://appstax.com).
 
 It's a work in progress, and not ready for use quite yet.
 
-## Example
+## Usage example
 
 ```java
 Ax.setAppKey("YourAppKey");
