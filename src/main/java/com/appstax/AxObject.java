@@ -159,7 +159,7 @@ public final class AxObject {
         for (Map.Entry<String, AxFile> item : this.files.entrySet()) {
             String key = item.getKey();
             String name = item.getValue().getName();
-            String data = item.getValue().getData();
+            String data = item.getValue().getData().toString();
             String path = AxPaths.file(this.getCollection(), this.getId(), key, name);
 
             Map<String, String> form = new HashMap<String, String>();

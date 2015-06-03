@@ -17,7 +17,7 @@ public class AxFileTest extends AxTest {
 
         String filename = "file-example-image.jpg";
         AxObject object = new AxObject(COLLECTION_2);
-        AxFile file = new AxFile(filename, getResource(filename));
+        AxFile file = new AxFile(filename, getResource(filename).getBytes());
         object.put("image", file);
         Ax.save(object);
 
@@ -46,9 +46,9 @@ public class AxFileTest extends AxTest {
         String filename = "file-example-image.jpg";
         AxObject object = new AxObject(COLLECTION_2);
 
-        object.put("image1", new AxFile("file-example-image-1.jpg", getResource(filename)));
-        object.put("image2", new AxFile("file-example-image-2.jpg", getResource(filename)));
-        object.put("image3", new AxFile("file-example-image-3.jpg", getResource(filename)));
+        object.put("image1", new AxFile("file-example-image-1.jpg", getResource(filename).getBytes()));
+        object.put("image2", new AxFile("file-example-image-2.jpg", getResource(filename).getBytes()));
+        object.put("image3", new AxFile("file-example-image-3.jpg", getResource(filename).getBytes()));
 
         Ax.save(object);
 

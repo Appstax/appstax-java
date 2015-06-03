@@ -5,10 +5,10 @@ import org.json.JSONObject;
 public final class AxFile {
 
     private String name;
-    private String data;
+    private byte[] data;
     private String url;
 
-    public AxFile(String name, String data) {
+    public AxFile(String name, byte[] data) {
         this.name = name;
         this.data = data;
     }
@@ -27,7 +27,7 @@ public final class AxFile {
         return name;
     }
 
-    public String getData() {
+    public byte[] getData() {
         return data;
     }
 

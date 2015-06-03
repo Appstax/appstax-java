@@ -41,16 +41,22 @@ final class AxClient {
         return parse(execute(formRequest(method, path, form)));
     }
 
-    protected static String file(Method method, String path) {
-        return execute(fileRequest(method, path));
+    protected static byte[] file(Method method, String path) {
+        try {
+            Request req = fileRequest(method, path);
+            Response res = client.newCall(req).execute();
+            checkReturnCode(res);
+            return res.body().bytes();
+        } catch (IOException e) {
+            throw new AxException(e.getMessage(), e);
+        }
     }
 
     private static String execute(Request req) {
         try {
             Response res = client.newCall(req).execute();
-            String body = res.body().string();
-            checkReturnCode(res, body);
-            return body;
+            checkReturnCode(res);
+            return res.body().string();
         } catch (IOException e) {
             throw new AxException(e.getMessage(), e);
         }
@@ -125,16 +131,20 @@ final class AxClient {
         if (method == Method.DELETE) req = req.delete(body);
     }
 
-    private static void checkReturnCode(Response response, String body) {
-        if (!response.isSuccessful()) {
-            JSONObject json = parse(body);
-
+    private static void checkReturnCode(Response res) {
+        if (res.isSuccessful()) {
+            return;
+        }
+        try {
+            JSONObject json = parse(res.body().string());
             throw new AxException(
-                response.code(),
+                res.code(),
                 json.getString(ERROR_ID),
                 json.getString(ERROR_CODE),
                 json.getString(ERROR_MESSAGE)
             );
+        } catch (IOException e) {
+            throw new AxException(e.getMessage(), e);
         }
     }
 
