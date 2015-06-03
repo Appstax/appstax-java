@@ -1,7 +1,7 @@
 # Appstax Java SDK 
 
 [![Build Status](https://travis-ci.org/Appstax/appstax-java.svg?branch=master)](https://travis-ci.org/Appstax/appstax-java)
-[ ![Download](https://api.bintray.com/packages/appstax/maven/appstax-java/images/download.svg) ](https://bintray.com/appstax/maven/appstax-java/_latestVersion)
+[![Download](https://api.bintray.com/packages/appstax/maven/appstax-java/images/download.svg) ](https://bintray.com/appstax/maven/appstax-java/_latestVersion)
 
 This is the official Java SDK for [Appstax](https://appstax.com).
 
