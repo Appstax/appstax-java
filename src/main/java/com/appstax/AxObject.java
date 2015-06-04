@@ -12,12 +12,14 @@ public final class AxObject {
     private static final String KEY_UPDATED = "sysUpdated";
     private static final String KEY_ID = "sysObjectId";
     private static final String KEY_TYPE = "sysDatatype";
+
+    private static final String KEY_USER = "username";
     private static final String KEY_FILE = "filename";
+    private static final String TYPE_FILE = "file";
+
     private static final String KEY_GRANTS = "grants";
     private static final String KEY_REVOKES = "revokes";
-    private static final String KEY_USER = "username";
     private static final String KEY_PERMISSIONS = "permissions";
-    private static final String TYPE_FILE = "file";
 
     private String collection;
     private JSONObject properties;
@@ -54,8 +56,13 @@ public final class AxObject {
     }
 
     public AxFile getFile(String key) {
-        JSONObject meta = this.properties.getJSONObject(key);
-        return new AxFile(meta);
+        if (!this.properties.has(key)) {
+            return null;
+        }
+        if (!this.files.containsKey(key)) {
+            this.files.put(key, fileFromProperty(key));
+        }
+        return this.files.get(key);
     }
 
     public void put(String key, Object val) {
@@ -161,6 +168,12 @@ public final class AxObject {
             String path = AxPaths.file(this.getCollection(), this.getId(), key, file.getName());
             file.save(path);
         }
+    }
+
+    private AxFile fileFromProperty(String key) {
+        JSONObject meta = this.properties.getJSONObject(key);
+        if (!meta.getString(KEY_TYPE).equals(TYPE_FILE)) return null;
+        return new AxFile(meta);
     }
 
 }

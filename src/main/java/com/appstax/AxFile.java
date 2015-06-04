@@ -7,7 +7,9 @@ import java.util.Map;
 
 public final class AxFile {
 
+    private static final String KEY_NAME = "filename";
     private static final String KEY_DATA = "filedata";
+    private static final String KEY_URL = "url";
 
     private String name;
     private byte[] data;
@@ -20,9 +22,9 @@ public final class AxFile {
         this.data = data;
     }
 
-    protected AxFile(JSONObject properties) {
-        this.name = properties.getString("filename");
-        this.url = properties.getString("url");
+    protected AxFile(JSONObject meta) {
+        this.name = meta.has(KEY_NAME) ? meta.getString(KEY_NAME) : null;
+        this.url = meta.has(KEY_URL) ? meta.getString(KEY_URL) : null;
     }
 
     protected AxFile load() {
@@ -36,6 +38,7 @@ public final class AxFile {
             form.put(KEY_DATA, this.getData().toString());
             AxClient.form(AxClient.Method.PUT, path, form);
             this.saved = true;
+            this.url = path;
         }
         return this;
     }
@@ -51,4 +54,5 @@ public final class AxFile {
     public String getUrl() {
         return url;
     }
+
 }

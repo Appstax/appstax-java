@@ -19,7 +19,12 @@ public class AxFileTest extends AxTest {
         AxObject object = new AxObject(COLLECTION_2);
         AxFile file = new AxFile(filename, getResource(filename).getBytes());
         object.put("image", file);
+
+        assertNull(object.getId());
+        assertNull(object.getFile("image").getUrl());
         Ax.save(object);
+        assertNotNull(object.getId());
+        assertNotNull(object.getFile("image").getUrl());
 
         RecordedRequest req1 = server.takeRequest();
         String body = "{\"image\":{\"sysDatatype\":\"file\",\"filename\":\"file-example-image.jpg\"}}";
@@ -94,11 +99,12 @@ public class AxFileTest extends AxTest {
 
         AxObject object = Ax.find(COLLECTION_1, "123");
         AxFile file = object.getFile("file");
+        assertNotNull(file);
 
         RecordedRequest req = server.takeRequest();
         assertEquals("GET", req.getMethod());
         assertEquals("file-example-image.jpg", file.getName());
-        assertEquals("files/FileCollection/opgklDfL0Y4Q/file/file-example-image.jpg", file.getUrl());
+        assertEquals("files/" + object.getCollection() + "/" + object.getId() + "/file/file-example-image.jpg", file.getUrl());
         assertNull(file.getData());
 
         server.enqueue(new MockResponse().setBody(getResource("file-example-image.jpg")));
@@ -107,6 +113,7 @@ public class AxFileTest extends AxTest {
 
         req = server.takeRequest();
         assertEquals("GET", req.getMethod());
+        assertEquals("http://" + req.getHeaders().get("Host"), server.getUrl("").toString());
         assertEquals(Ax.getAppKey(), req.getHeader("x-appstax-appkey"));
 
         server.shutdown();
