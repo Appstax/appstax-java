@@ -66,6 +66,28 @@ public class AxFileTest extends AxTest {
     }
 
     @org.junit.Test
+    public void testFileUploadOnceSuccess() throws Exception {
+        MockWebServer server = createMockWebServer();
+        String res = getResource("save-object-success.json");
+        server.enqueue(new MockResponse().setBody(res));
+        server.enqueue(new MockResponse().setBody(""));
+        server.enqueue(new MockResponse().setBody(res));
+        server.enqueue(new MockResponse().setBody(res));
+        server.enqueue(new MockResponse().setBody(res));
+
+        String filename = "file-example-image.jpg";
+        AxObject object = new AxObject(COLLECTION_2);
+        AxFile file = new AxFile(filename, getResource(filename).getBytes());
+        object.put("image", file);
+
+        Ax.save(object);
+        Ax.save(object);
+
+        assertEquals(3, server.getRequestCount());
+        server.shutdown();
+    }
+
+    @org.junit.Test
     public void testFileGetSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
         server.enqueue(new MockResponse().setBody(getResource("find-file-success.json")));

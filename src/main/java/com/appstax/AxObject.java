@@ -13,7 +13,6 @@ public final class AxObject {
     private static final String KEY_ID = "sysObjectId";
     private static final String KEY_TYPE = "sysDatatype";
     private static final String KEY_FILE = "filename";
-    private static final String KEY_DATA = "filedata";
     private static final String KEY_GRANTS = "grants";
     private static final String KEY_REVOKES = "revokes";
     private static final String KEY_USER = "username";
@@ -158,13 +157,9 @@ public final class AxObject {
     private void saveFiles() {
         for (Map.Entry<String, AxFile> item : this.files.entrySet()) {
             String key = item.getKey();
-            String name = item.getValue().getName();
-            String data = item.getValue().getData().toString();
-            String path = AxPaths.file(this.getCollection(), this.getId(), key, name);
-
-            Map<String, String> form = new HashMap<String, String>();
-            form.put(KEY_DATA, data);
-            AxClient.form(AxClient.Method.PUT, path, form);
+            AxFile file = item.getValue();
+            String path = AxPaths.file(this.getCollection(), this.getId(), key, file.getName());
+            file.save(path);
         }
     }
 
