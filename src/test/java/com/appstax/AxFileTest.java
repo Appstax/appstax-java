@@ -25,6 +25,7 @@ public class AxFileTest extends AxTest {
         Ax.save(object);
         assertNotNull(object.getId());
         assertNotNull(object.getFile("image").getUrl());
+        assertTrue(object.getFile("image").getUrl().startsWith("http"));
 
         RecordedRequest req1 = server.takeRequest();
         String body = "{\"image\":{\"sysDatatype\":\"file\",\"filename\":\"file-example-image.jpg\"}}";
@@ -97,15 +98,19 @@ public class AxFileTest extends AxTest {
         MockWebServer server = createMockWebServer();
         server.enqueue(new MockResponse().setBody(getResource("find-file-success.json")));
 
+        String name = "file-example-image.jpg";
         AxObject object = Ax.find(COLLECTION_1, "123");
         AxFile file = object.getFile("file");
         assertNotNull(file);
 
         RecordedRequest req = server.takeRequest();
         assertEquals("GET", req.getMethod());
-        assertEquals("file-example-image.jpg", file.getName());
-        assertEquals("files/" + object.getCollection() + "/" + object.getId() + "/file/file-example-image.jpg", file.getUrl());
+        assertEquals(name, file.getName());
         assertNull(file.getData());
+
+        String exp = server.getUrl("/") + "files/" + object.getCollection() + "/" + object.getId() + "/file/" + name;
+        String act = file.getUrl();
+        assertEquals(exp, act);
 
         server.enqueue(new MockResponse().setBody(getResource("file-example-image.jpg")));
         file.load();

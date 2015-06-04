@@ -28,7 +28,7 @@ public final class AxFile {
     }
 
     protected AxFile load() {
-        this.data = AxClient.file(AxClient.Method.GET, this.getUrl());
+        this.data = AxClient.file(AxClient.Method.GET, this.url);
         return this;
     }
 
@@ -52,7 +52,11 @@ public final class AxFile {
     }
 
     public String getUrl() {
-        return url;
+        if (this.url == null) {
+            return null;
+        } else {
+            return Ax.getApiUrl() + this.url;
+        }
     }
 
 }
