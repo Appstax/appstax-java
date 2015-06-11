@@ -1,10 +1,10 @@
 package com.appstax;
 
 import com.squareup.okhttp.*;
+import okio.BufferedSink;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Map;
 
 final class AxClient {
 
@@ -16,6 +16,7 @@ final class AxClient {
     private static final String HEADER_APP_KEY = "x-appstax-appkey";
     private static final String HEADER_SESSION_ID = "x-appstax-sessionid";
     private static final String HEADER_TYPE_JSON = "application/json; charset=utf-8";
+    private static final String HEADER_TYPE_STREAM = "application/octet-stream";
     private static final String HEADER_TYPE_FORM = "multipart/form-data";
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
     private static final String HEADER_ACCEPT = "Accept";
@@ -37,8 +38,8 @@ final class AxClient {
         return parse(execute(jsonRequest(method, path, json)));
     }
 
-    protected static JSONObject form(Method method, String path, Map<String, String> form) {
-        return parse(execute(formRequest(method, path, form)));
+    protected static JSONObject multipart(Method method, String path, String field, String name, byte[] data) {
+        return parse(execute(multipartRequest(method, path, field, name, data)));
     }
 
     protected static byte[] file(Method method, String path) {
@@ -77,17 +78,21 @@ final class AxClient {
         return req.build();
     }
 
-    private static Request formRequest(Method method, String path, Map<String, String> form) {
+    private static Request multipartRequest(Method method, String path, String field, String name, final byte[] data) {
         Request.Builder req = new Request.Builder();
+        req.addHeader(HEADER_CONTENT_TYPE, HEADER_TYPE_FORM);
         setPath(req, path);
         setKeys(req);
 
-        req.addHeader(HEADER_CONTENT_TYPE, HEADER_TYPE_FORM);
-
         MultipartBuilder multipart = new MultipartBuilder();
-        for (Map.Entry<String, String> item : form.entrySet()) {
-            multipart.addFormDataPart(item.getKey(), item.getValue());
-        }
+        multipart.addFormDataPart(field, name, new RequestBody() {
+            public MediaType contentType() {
+                return MediaType.parse(HEADER_TYPE_STREAM);
+            }
+            public void writeTo(BufferedSink bufferedSink) throws IOException {
+                bufferedSink.write(data);
+            }
+        });
 
         RequestBody body = multipart.build();
         setBody(req, method, body);

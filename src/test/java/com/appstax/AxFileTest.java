@@ -33,10 +33,12 @@ public class AxFileTest extends AxTest {
         assertEquals(body, req1.getBody().readUtf8());
 
         RecordedRequest req2 = server.takeRequest();
+        String multipart = req2.getBody().readUtf8();
         assertEquals("PUT", req2.getMethod());
         assertTrue(req2.getPath().indexOf("/files/") > -1);
         assertTrue(req2.getHeader("Content-Type").startsWith("multipart"));
-        assertTrue(req2.getBody().readUtf8().indexOf("filedata") > -1);
+        assertTrue(multipart.indexOf("filedata") > -1);
+        assertTrue(multipart.indexOf("octet-stream") > -1);
 
         server.shutdown();
     }
