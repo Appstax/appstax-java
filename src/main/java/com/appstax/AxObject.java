@@ -21,8 +21,13 @@ public final class AxObject {
     private static final String KEY_REVOKES = "revokes";
     private static final String KEY_PERMISSIONS = "permissions";
 
+    private static final String KEY_ADDITIONS = "additions";
+    private static final String KEY_REMOVALS = "removals";
+    private static final String KEY_RELATIONS = "sysRelationChanges";
+
     private String collection;
     private JSONObject properties;
+    private JSONObject relations;
     private JSONObject access;
     private Map<String, AxFile> files;
 
@@ -93,6 +98,14 @@ public final class AxObject {
         return this.permission(KEY_REVOKES, username, permissions);
     }
 
+    public AxObject createRelation(String relation, String... additions) {
+        return this.relation(relation, KEY_ADDITIONS, additions);
+    }
+
+    public AxObject removeRelation(String relation, String... removals) {
+        return this.relation(relation, KEY_REMOVALS, removals);
+    }
+
     protected AxObject save() {
         saveObject();
         saveAccess();
@@ -150,17 +163,6 @@ public final class AxObject {
         return this;
     }
 
-    private AxObject permission(String type, String username, String[] permissions) {
-        if (permissions.length > 0) {
-            JSONObject grant = new JSONObject();
-            grant.put(KEY_ID, this.getId());
-            grant.put(KEY_USER, username);
-            grant.put(KEY_PERMISSIONS, new JSONArray(permissions));
-            this.access.getJSONArray(type).put(grant);
-        }
-        return this;
-    }
-
     private void saveFiles() {
         for (Map.Entry<String, AxFile> item : this.files.entrySet()) {
             String key = item.getKey();
@@ -174,6 +176,42 @@ public final class AxObject {
         JSONObject meta = this.properties.getJSONObject(key);
         if (!meta.getString(KEY_TYPE).equals(TYPE_FILE)) return null;
         return new AxFile(meta);
+    }
+
+    private AxObject permission(String type, String username, String[] items) {
+        if (items.length == 0) {
+            return this;
+        }
+        JSONObject grant = new JSONObject();
+        grant.put(KEY_ID, this.getId());
+        grant.put(KEY_USER, username);
+        grant.put(KEY_PERMISSIONS, new JSONArray(items));
+        this.access.getJSONArray(type).put(grant);
+        return this;
+    }
+
+    private AxObject relation(String relation, String type, String[] items) {
+        if (items.length == 0) {
+            return this;
+        }
+
+        if (this.get(relation) == null) {
+            JSONObject value = new JSONObject();
+            JSONObject changes = new JSONObject();
+            changes.put(KEY_ADDITIONS, new JSONArray());
+            changes.put(KEY_REMOVALS, new JSONArray());
+            value.put(KEY_RELATIONS, changes);
+            this.put(relation, value);
+        }
+
+        JSONObject value = (JSONObject) this.get(relation);
+        JSONArray changes = value.getJSONObject(KEY_RELATIONS).getJSONArray(type);
+
+        for (String id : items) {
+            changes.put(id);
+        }
+
+        return this;
     }
 
 }
