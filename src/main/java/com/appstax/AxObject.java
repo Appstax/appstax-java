@@ -6,36 +6,29 @@ import org.json.JSONObject;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public final class AxObject {
 
-    private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+    protected static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+    protected static final String UNSAVED_ERR = "Can not relate to an unsaved object.";
 
-    private static final String KEY_CREATED = "sysCreated";
-    private static final String KEY_UPDATED = "sysUpdated";
-    private static final String KEY_ID = "sysObjectId";
-    private static final String KEY_TYPE = "sysDatatype";
+    protected static final String KEY_CREATED = "sysCreated";
+    protected static final String KEY_UPDATED = "sysUpdated";
+    protected static final String KEY_ID = "sysObjectId";
+    protected static final String KEY_TYPE = "sysDatatype";
+    protected static final String KEY_FILE = "filename";
+    protected static final String TYPE_FILE = "file";
 
-    private static final String KEY_USER = "username";
-    private static final String KEY_FILE = "filename";
-    private static final String TYPE_FILE = "file";
-
-    private static final String KEY_GRANTS = "grants";
-    private static final String KEY_REVOKES = "revokes";
-    private static final String KEY_PERMISSIONS = "permissions";
-
-    private static final String KEY_ADDITIONS = "additions";
-    private static final String KEY_REMOVALS = "removals";
-    private static final String KEY_RELATIONS = "sysRelationChanges";
+    protected static final String KEY_ADDITIONS = "additions";
+    protected static final String KEY_REMOVALS = "removals";
+    protected static final String KEY_RELATIONS = "sysRelationChanges";
 
     private String collection;
+    private AxPermissions permissions;
     private JSONObject properties;
-    private JSONObject relations;
-    private JSONObject access;
     private Map<String, AxFile> files;
+    private Map<String, List<AxObject>> relations;
 
     public AxObject(String collection) {
         this(collection, new JSONObject());
@@ -44,10 +37,9 @@ public final class AxObject {
     public AxObject(String collection, JSONObject properties) {
         this.collection = collection;
         this.properties = properties;
-        this.access = new JSONObject();
-        this.access.put(KEY_GRANTS, new JSONArray());
-        this.access.put(KEY_REVOKES, new JSONArray());
-        this.files = new HashMap<String, AxFile>();
+        this.permissions = new AxPermissions();
+        this.files = new HashMap<>();
+        this.relations = new HashMap<>();
     }
 
     public String getCollection() {
@@ -118,32 +110,58 @@ public final class AxObject {
     }
 
     public AxObject grantPublic(String... permissions) {
-        return this.permission(KEY_GRANTS, "*", permissions);
+        this.permissions.grantPublic(this.getId(), permissions);
+        return this;
     }
 
     public AxObject grant(String username, String... permissions) {
-        return this.permission(KEY_GRANTS, username, permissions);
+        this.permissions.grant(this.getId(), username, permissions);
+        return this;
     }
 
     public AxObject revokePublic(String... permissions) {
-        return this.permission(KEY_REVOKES, "*", permissions);
+        this.permissions.revokePublic(this.getId(), permissions);
+        return this;
     }
 
     public AxObject revoke(String username, String... permissions) {
-        return this.permission(KEY_REVOKES, username, permissions);
+        this.permissions.revoke(this.getId(), username, permissions);
+        return this;
     }
 
     public AxObject createRelation(String relation, AxObject... additions) {
-        return this.relation(relation, KEY_ADDITIONS, additions);
+        this.marshalRelations(relation, KEY_ADDITIONS, additions);
+
+        if (this.relations.get(relation) == null) {
+            this.relations.put(relation, new ArrayList<AxObject>(Arrays.asList(additions)));
+        } else {
+            this.relations.get(relation).addAll(Arrays.asList(additions));
+        }
+
+        return this;
     }
 
     public AxObject removeRelation(String relation, AxObject... removals) {
-        return this.relation(relation, KEY_REMOVALS, removals);
+        if (this.relations.get(relation) == null) {
+            throw new AxException("Unknown relation: " + relation);
+        }
+
+        this.marshalRelations(relation, KEY_REMOVALS, removals);
+
+        for (AxObject removal : removals) {
+            for (AxObject existing : this.relations.get(relation)) {
+                if (existing.getId().equals(removal.getId())) {
+                    this.relations.get(relation).remove(existing);
+                }
+            }
+        }
+
+        return this;
     }
 
     protected AxObject save() {
         saveObject();
-        saveAccess();
+        permissions.save();
         saveFiles();
         return this;
     }
@@ -166,20 +184,6 @@ public final class AxObject {
         } else {
             this.updateObject();
         }
-    }
-
-    private void saveAccess() {
-        if (this.hasAccess()) {
-            String path = AxPaths.permissions();
-            AxClient.request(AxClient.Method.POST, path, this.access);
-        }
-    }
-
-    private boolean hasAccess() {
-        return (
-            this.access.getJSONArray(KEY_GRANTS).length() > 0 ||
-            this.access.getJSONArray(KEY_REVOKES).length() > 0
-        );
     }
 
     private AxObject createObject() {
@@ -213,26 +217,14 @@ public final class AxObject {
         return new AxFile(meta);
     }
 
-    private AxObject permission(String type, String username, String[] items) {
-        if (items.length == 0) {
-            return this;
-        }
-        JSONObject grant = new JSONObject();
-        grant.put(KEY_ID, this.getId());
-        grant.put(KEY_USER, username);
-        grant.put(KEY_PERMISSIONS, new JSONArray(items));
-        this.access.getJSONArray(type).put(grant);
-        return this;
-    }
-
-    private AxObject relation(String relation, String type, AxObject[] objects) {
+    private AxObject marshalRelations(String relation, String type, AxObject[] objects) {
         if (objects.length == 0) {
             return this;
         }
 
         for (AxObject object : objects) {
             if (object.getId() == null) {
-                throw new AxException("Can not change relation to an unsaved object.");
+                throw new AxException(UNSAVED_ERR);
             }
         }
 
