@@ -3,10 +3,16 @@ package com.appstax;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class AxObject {
+
+    private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 
     private static final String KEY_CREATED = "sysCreated";
     private static final String KEY_UPDATED = "sysUpdated";
@@ -48,20 +54,40 @@ public final class AxObject {
         return this.collection;
     }
 
-    public Object get(String key) {
-        return this.properties.has(key) ?
-                this.properties.get(key) :
-                null;
+    public String getId() {
+        return this.getString(KEY_ID);
     }
 
-    public String getId() {
-        return this.properties.has(KEY_ID) ?
-            this.properties.getString(KEY_ID) :
-            null;
+    public String getString(String key) {
+        return this.has(key) ? this.properties.getString(key) : null;
+    }
+
+    public Object get(String key) {
+        return this.has(key) ? this.properties.get(key) : null;
+    }
+
+    public Date getCreated() {
+        return this.getDate(KEY_CREATED);
+    }
+
+    public Date getUpdated() {
+        return this.getDate(KEY_UPDATED);
+    }
+
+    public Date getDate(String key) {
+        if (!this.has(key)) {
+            return null;
+        }
+        try {
+            DateFormat source = new SimpleDateFormat(DATE_FORMAT);
+            return source.parse(this.getString(key));
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
     public AxFile getFile(String key) {
-        if (!this.properties.has(key)) {
+        if (!this.has(key)) {
             return null;
         }
         if (!this.files.containsKey(key)) {
@@ -74,12 +100,21 @@ public final class AxObject {
         this.properties.put(key, val);
     }
 
+    public void put(String key, Date val) {
+        DateFormat target = new SimpleDateFormat(DATE_FORMAT);
+        this.put(key, target.format(val));
+    }
+
     public void put(String key, AxFile file) {
         JSONObject meta = new JSONObject();
         meta.put(KEY_TYPE, TYPE_FILE);
         meta.put(KEY_FILE, file.getName());
         this.files.put(key, file);
         this.put(key, meta);
+    }
+
+    public boolean has(String key) {
+        return this.properties.has(key);
     }
 
     public AxObject grantPublic(String... permissions) {
