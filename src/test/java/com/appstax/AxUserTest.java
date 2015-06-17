@@ -11,12 +11,12 @@ import static org.junit.Assert.assertTrue;
 public class AxUserTest extends AxTest {
 
     @Before
-    public void testCurrentUser() throws Exception {
+    public void shouldHaveNoDefaultUser() throws Exception {
         assertEquals(null, Ax.getCurrentUser());
     }
 
     @org.junit.Test
-    public void testSignupSuccess() throws Exception {
+    public void shouldCreateSignup() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("user-signup-success.json");
         server.enqueue(new MockResponse().setBody(body));
@@ -33,7 +33,7 @@ public class AxUserTest extends AxTest {
     }
 
     @org.junit.Test(expected=AxException.class)
-    public void testSignupError() throws Exception {
+    public void ShouldThrowOnSignupError() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("user-signup-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
@@ -44,7 +44,7 @@ public class AxUserTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testLoginSuccess() throws Exception {
+    public void shouldCreateLogin() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("user-login-success.json");
         server.enqueue(new MockResponse().setBody(body));
@@ -61,7 +61,7 @@ public class AxUserTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testLoginError() throws Exception {
+    public void shouldThrowOnLoginError() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("user-login-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
@@ -77,7 +77,7 @@ public class AxUserTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testLogoutSuccess() throws Exception {
+    public void shouldCreateLogout() throws Exception {
         MockWebServer server = createMockWebServer();
 
         String body = getResource("user-login-success.json");
@@ -99,7 +99,7 @@ public class AxUserTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testPropertiesSuccess() throws Exception {
+    public void shouldAllowUserProperties() throws Exception {
         MockWebServer server = createMockWebServer();
 
         String body = getResource("user-login-success.json");

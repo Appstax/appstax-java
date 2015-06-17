@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 public class AxFileTest extends AxTest {
 
     @org.junit.Test
-    public void testFileUploadSuccess() throws Exception {
+    public void shouldUploadFilesOnSave() throws Exception {
         MockWebServer server = createMockWebServer();
 
         server.enqueue(new MockResponse().setBody(getResource("save-object-success.json")));
@@ -44,7 +44,7 @@ public class AxFileTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testMultiFileUploadSuccess() throws Exception {
+    public void shuldUploadMultipleFilesOnSave() throws Exception {
         MockWebServer server = createMockWebServer();
         server.enqueue(new MockResponse().setBody(getResource("save-object-success.json")));
         server.enqueue(new MockResponse().setBody(""));

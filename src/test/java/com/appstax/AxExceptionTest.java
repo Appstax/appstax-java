@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 public class AxExceptionTest extends AxTest {
 
     @org.junit.Test
-    public void testSaveError() throws Exception {
+    public void shouldThrowOnServerError() throws Exception {
         MockWebServer server = createMockWebServer();
         server.enqueue(new MockResponse().setBody(getResource("save-object-error.json")).setResponseCode(400));
 

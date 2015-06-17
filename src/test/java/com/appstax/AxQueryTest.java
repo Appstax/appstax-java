@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 public class AxQueryTest extends AxTest {
 
     @org.junit.Test
-    public void testFindOneSuccess() throws Exception {
+    public void shouldFindOneObject() throws Exception {
         MockWebServer server = createMockWebServer();
         AxObject object = getObject(server);
 
@@ -24,7 +24,7 @@ public class AxQueryTest extends AxTest {
     }
 
     @org.junit.Test(expected=AxException.class)
-    public void testFindOneError() throws Exception {
+    public void shouldThrowOnFindError() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-object-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(404));
@@ -34,7 +34,7 @@ public class AxQueryTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testFindAllSuccess() throws Exception {
+    public void shouldFindMultipleObjects() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-objects-success.json");
         server.enqueue(new MockResponse().setBody(body));
@@ -48,7 +48,7 @@ public class AxQueryTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testFilterString() throws Exception {
+    public void shouldSendFilterString() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-objects-success.json");
         server.enqueue(new MockResponse().setBody(body));
@@ -67,7 +67,7 @@ public class AxQueryTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testFilterProperties() throws Exception {
+    public void shouldSendFilterProperties() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-objects-success.json");
         server.enqueue(new MockResponse().setBody(body));

@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 public class AxDateTest extends AxTest {
 
     @org.junit.Test
-    public void testSystemDates() throws Exception {
+    public void shouldParseSystemDates() throws Exception {
         MockWebServer server = createMockWebServer();
         AxObject object = getObject(server);
         Date created = object.getCreated();
@@ -25,7 +25,7 @@ public class AxDateTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testCustomDates() throws Exception {
+    public void shouldParseCustomDates() throws Exception {
         String format = "yyyy dd/MM @ HH:mm";
         String dateString1 = "1980 20/10 @ 12:13";
         String dateString2 = "2022 30/12 @ 01:02";

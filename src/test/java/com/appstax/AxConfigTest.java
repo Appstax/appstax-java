@@ -12,13 +12,13 @@ public class AxConfigTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testAppKey() {
+    public void shouldSetAppKey() {
         Ax.setAppKey(APP_KEY_2);
         assertEquals(APP_KEY_2, Ax.getAppKey());
     }
 
     @org.junit.Test
-    public void testApiUrlSlash() {
+    public void shouldAddSlashToUrl() {
         Ax.setApiUrl("1");
         assertEquals("1/", Ax.getApiUrl());
         Ax.setApiUrl("2/");

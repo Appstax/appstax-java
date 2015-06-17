@@ -9,9 +9,10 @@ import static org.junit.Assert.assertEquals;
 public class AxRefreshTest extends AxTest {
 
     @org.junit.Test
-    public void testFindOneSuccess() throws Exception {
+    public void shouldRefreshObject() throws Exception {
         MockWebServer server = createMockWebServer();
         AxObject object = getObject(server);
+        object.put("title", "unsaved");
 
         String body = getResource("find-object-success.json");
         server.enqueue(new MockResponse().setBody(body));

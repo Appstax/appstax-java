@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 public class AxPermissionsTest extends AxTest {
 
     @org.junit.Test
-    public void permitPublicSuccess() throws Exception {
+    public void shouldSavePublicAccess() throws Exception {
         MockWebServer server = createMockWebServer();
         AxObject object = new AxObject(COLLECTION_2);
 
@@ -36,7 +36,7 @@ public class AxPermissionsTest extends AxTest {
     }
 
     @org.junit.Test
-    public void permitUserSuccess() throws Exception {
+    public void shouldSaveUserAccess() throws Exception {
         MockWebServer server = createMockWebServer();
         AxObject object = new AxObject(COLLECTION_2);
 

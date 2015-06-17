@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 public class AxSaveTest extends AxTest {
 
     @org.junit.Test
-    public void testSaveSuccess() throws Exception {
+    public void shouldSaveObject() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("save-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
@@ -31,7 +31,7 @@ public class AxSaveTest extends AxTest {
     }
 
     @org.junit.Test(expected=AxException.class)
-    public void testSaveError() throws Exception {
+    public void shouldThrowOnSaveError() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("save-object-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
@@ -42,7 +42,7 @@ public class AxSaveTest extends AxTest {
     }
 
     @org.junit.Test
-    public void testUpdateSuccess() throws Exception {
+    public void shouldUpdateObject() throws Exception {
         MockWebServer server = createMockWebServer();
         AxObject object = getObject(server);
 
@@ -61,7 +61,7 @@ public class AxSaveTest extends AxTest {
     }
 
     @org.junit.Test(expected=AxException.class)
-    public void testUpdateError() throws Exception {
+    public void shouldThrowOnUpdateError() throws Exception {
         MockWebServer server = createMockWebServer();
         AxObject object = getObject(server);
 

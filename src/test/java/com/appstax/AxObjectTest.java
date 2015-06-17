@@ -7,13 +7,13 @@ import static org.junit.Assert.*;
 public class AxObjectTest extends AxTest {
 
     @org.junit.Test
-    public void testCollection() {
+    public void shouldSetCollectionName() {
         AxObject object = new AxObject(COLLECTION_1);
         assertEquals(COLLECTION_1, object.getCollection());
     }
 
     @org.junit.Test
-    public void testProperties() {
+    public void shouldSetProperties() {
         AxObject object = new AxObject(COLLECTION_1);
         object.put(PROPERTY_1, 1);
         object.put(PROPERTY_2, 1.1);

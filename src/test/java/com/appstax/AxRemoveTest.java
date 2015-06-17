@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 public class AxRemoveTest extends AxTest {
 
     @org.junit.Test
-    public void testRemoveOneSuccess() throws Exception {
+    public void shouldRemoveObject() throws Exception {
         MockWebServer server = createMockWebServer();
         AxObject object = getObject(server);
 
@@ -28,7 +28,7 @@ public class AxRemoveTest extends AxTest {
     }
 
     @org.junit.Test(expected=AxException.class)
-    public void testRemoveOneError() throws Exception {
+    public void shouldThrowOnRemoveUnsaved() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("remove-object-error.json");
         server.enqueue(new MockResponse().setBody(body).setResponseCode(404));

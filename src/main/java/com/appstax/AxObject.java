@@ -133,11 +133,11 @@ public final class AxObject {
         return this.permission(KEY_REVOKES, username, permissions);
     }
 
-    public AxObject createRelation(String relation, String... additions) {
+    public AxObject createRelation(String relation, AxObject... additions) {
         return this.relation(relation, KEY_ADDITIONS, additions);
     }
 
-    public AxObject removeRelation(String relation, String... removals) {
+    public AxObject removeRelation(String relation, AxObject... removals) {
         return this.relation(relation, KEY_REMOVALS, removals);
     }
 
@@ -225,9 +225,15 @@ public final class AxObject {
         return this;
     }
 
-    private AxObject relation(String relation, String type, String[] items) {
-        if (items.length == 0) {
+    private AxObject relation(String relation, String type, AxObject[] objects) {
+        if (objects.length == 0) {
             return this;
+        }
+
+        for (AxObject object : objects) {
+            if (object.getId() == null) {
+                throw new AxException("Can not change relation to an unsaved object.");
+            }
         }
 
         if (this.get(relation) == null) {
@@ -242,8 +248,8 @@ public final class AxObject {
         JSONObject value = (JSONObject) this.get(relation);
         JSONArray changes = value.getJSONObject(KEY_RELATIONS).getJSONArray(type);
 
-        for (String id : items) {
-            changes.put(id);
+        for (AxObject object : objects) {
+            changes.put(object.getId());
         }
 
         return this;
