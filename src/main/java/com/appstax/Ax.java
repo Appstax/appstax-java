@@ -29,6 +29,10 @@ public class Ax {
         return object.save();
     }
 
+    public static AxObject saveAll(AxObject object) {
+        return object.saveAll();
+    }
+
     public static AxObject remove(AxObject object) {
         return object.remove();
     }

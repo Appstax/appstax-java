@@ -1,18 +1,18 @@
 package com.appstax;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class AxObject {
 
     protected static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-    protected static final String UNSAVED_ERR = "Can not relate to an unsaved object.";
-
     protected static final String KEY_CREATED = "sysCreated";
     protected static final String KEY_UPDATED = "sysUpdated";
     protected static final String KEY_ID = "sysObjectId";
@@ -20,15 +20,11 @@ public final class AxObject {
     protected static final String KEY_FILE = "filename";
     protected static final String TYPE_FILE = "file";
 
-    protected static final String KEY_ADDITIONS = "additions";
-    protected static final String KEY_REMOVALS = "removals";
-    protected static final String KEY_RELATIONS = "sysRelationChanges";
-
     private String collection;
+    private AxRelations relations;
     private AxPermissions permissions;
     private JSONObject properties;
     private Map<String, AxFile> files;
-    private Map<String, List<AxObject>> relations;
 
     public AxObject(String collection) {
         this(collection, new JSONObject());
@@ -37,9 +33,9 @@ public final class AxObject {
     public AxObject(String collection, JSONObject properties) {
         this.collection = collection;
         this.properties = properties;
+        this.relations = new AxRelations(this.properties);
         this.permissions = new AxPermissions();
         this.files = new HashMap<>();
-        this.relations = new HashMap<>();
     }
 
     public String getCollection() {
@@ -129,40 +125,35 @@ public final class AxObject {
         return this;
     }
 
+    public List<AxObject> getAll(String relation) {
+        return this.relations.all(relation);
+    }
+
+    public AxObject getOne(String relation) {
+        return this.relations.one(relation);
+    }
+
     public AxObject createRelation(String relation, AxObject... additions) {
-        this.marshalRelations(relation, KEY_ADDITIONS, additions);
-
-        if (this.relations.get(relation) == null) {
-            this.relations.put(relation, new ArrayList<AxObject>(Arrays.asList(additions)));
-        } else {
-            this.relations.get(relation).addAll(Arrays.asList(additions));
-        }
-
+        this.relations.createRelation(relation, additions);
         return this;
     }
 
     public AxObject removeRelation(String relation, AxObject... removals) {
-        if (this.relations.get(relation) == null) {
-            throw new AxException("Unknown relation: " + relation);
-        }
-
-        this.marshalRelations(relation, KEY_REMOVALS, removals);
-
-        for (AxObject removal : removals) {
-            for (AxObject existing : this.relations.get(relation)) {
-                if (existing.getId().equals(removal.getId())) {
-                    this.relations.get(relation).remove(existing);
-                }
-            }
-        }
-
+        this.relations.removeRelation(relation, removals);
         return this;
     }
 
     protected AxObject save() {
+        relations.append(this);
         saveObject();
         permissions.save();
         saveFiles();
+        return this;
+    }
+
+    protected AxObject saveAll() {
+        this.relations.save();
+        this.save();
         return this;
     }
 
@@ -215,36 +206,6 @@ public final class AxObject {
         JSONObject meta = this.properties.getJSONObject(key);
         if (!meta.getString(KEY_TYPE).equals(TYPE_FILE)) return null;
         return new AxFile(meta);
-    }
-
-    private AxObject marshalRelations(String relation, String type, AxObject[] objects) {
-        if (objects.length == 0) {
-            return this;
-        }
-
-        for (AxObject object : objects) {
-            if (object.getId() == null) {
-                throw new AxException(UNSAVED_ERR);
-            }
-        }
-
-        if (this.get(relation) == null) {
-            JSONObject value = new JSONObject();
-            JSONObject changes = new JSONObject();
-            changes.put(KEY_ADDITIONS, new JSONArray());
-            changes.put(KEY_REMOVALS, new JSONArray());
-            value.put(KEY_RELATIONS, changes);
-            this.put(relation, value);
-        }
-
-        JSONObject value = (JSONObject) this.get(relation);
-        JSONArray changes = value.getJSONObject(KEY_RELATIONS).getJSONArray(type);
-
-        for (AxObject object : objects) {
-            changes.put(object.getId());
-        }
-
-        return this;
     }
 
 }

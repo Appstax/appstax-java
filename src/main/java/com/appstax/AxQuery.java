@@ -29,13 +29,17 @@ final class AxQuery {
     }
 
     protected static List<AxObject> filter(String collection, Map<String, String> properties) {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder b = new StringBuilder();
 
         for (Map.Entry<String, String> entry : properties.entrySet()) {
-            builder.append(OPERATOR + entry.getKey() + "='" + entry.getValue() + "'");
+            b.append(OPERATOR);
+            b.append(entry.getKey());
+            b.append("='");
+            b.append(entry.getValue());
+            b.append("'");
         }
 
-        return filter(collection, builder.toString().replaceFirst(OPERATOR, ""));
+        return filter(collection, b.toString().replaceFirst(OPERATOR, ""));
     }
 
     private static List<AxObject> objects(String collection, JSONObject json) {

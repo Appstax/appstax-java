@@ -116,7 +116,7 @@ final class AxClient {
     }
 
     private static void setAppKey(Request.Builder req) {
-        if (Ax.getAppKey() == "") {
+        if (Ax.getAppKey().equals("")) {
             throw new AxException(ERROR_KEY);
         } else {
             req.addHeader(HEADER_APP_KEY, Ax.getAppKey());
