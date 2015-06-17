@@ -30,15 +30,19 @@ final class AxRelations {
     }
 
     protected List<AxObject> all(String relation) {
-        if (this.relations.containsKey(relation)) {
+        if (this.relations == null) {
+            return null;
+        } else if (this.relations.containsKey(relation)) {
             return this.relations.get(relation);
         } else {
-            return new ArrayList<>();
+            return null;
         }
     }
 
     protected AxObject one(String relation) {
-        if (this.relations.containsKey(relation)) {
+        if (this.relations == null) {
+            return null;
+        } else if (this.relations.containsKey(relation)) {
             return this.relations.get(relation).get(0);
         } else {
             return null;
@@ -149,11 +153,16 @@ final class AxRelations {
                 continue;
             }
 
-            relations.put(key, parseObjects(property));
-        }
+            JSONArray items = property.getJSONArray(KEY_OBJECTS);
+            String collection = property.getString(KEY_COLLECTION);
 
-        for (String key : relations.keySet()) {
-            properties.remove(key);
+            if (items.get(0) instanceof JSONObject) {
+                List<AxObject> objects = parseObjects(collection, items);
+                properties.put(key, collectIds(objects));
+                relations.put(key, objects);
+            } else {
+                properties.put(key, items);
+            }
         }
 
         return relations;
@@ -173,11 +182,8 @@ final class AxRelations {
         return prop;
     }
 
-    private List<AxObject> parseObjects(JSONObject prop) {
-        List<AxObject> objects = new ArrayList<AxObject>();
-
-        JSONArray items = prop.getJSONArray(KEY_OBJECTS);
-        String collection = prop.getString(KEY_COLLECTION);
+    private List<AxObject> parseObjects(String collection, JSONArray items) {
+        List<AxObject> objects = new ArrayList<>();
 
         for (int i = 0; i < items.length(); i++) {
             JSONObject data = items.getJSONObject(i);
@@ -185,6 +191,16 @@ final class AxRelations {
         }
 
         return objects;
+    }
+
+    private List<String> collectIds(List<AxObject> objects) {
+        List<String> ids = new ArrayList<>();
+
+        for (AxObject object : objects) {
+            ids.add(object.getId());
+        }
+
+        return ids;
     }
 
 }

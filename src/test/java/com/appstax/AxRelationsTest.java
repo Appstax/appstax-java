@@ -4,19 +4,39 @@ import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 public class AxRelationsTest extends AxTest {
 
     @org.junit.Test
-    public void shouldGetParsedRelations() throws Exception {
+    public void shouldParseUnexpandedRelations() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("find-relation-success.json");
+        String body = getResource("relation-unexpanded-success.json");
         server.enqueue(new MockResponse().setBody(body));
-        AxObject object = Ax.find(COLLECTION_1, "0lxenePip1Z5zb");
+        AxObject object = Ax.find(COLLECTION_1, "123");
 
-        assertEquals("0lxenePip1Z5zb", object.getId());
-        assertNull(object.get("messages"));
+        List<String> expected = new ArrayList<>();
+        List<String> actual = object.getStrings("messages");
+
+        expected.add("KqXZPjCEyQKm");
+        expected.add("DQXzz4BSAreWq");
+
+        assertEquals(expected, actual);
+        assertNull(object.getAll("messages"));
+
+        server.shutdown();
+    }
+    @org.junit.Test
+    public void shouldParseExpandedRelations() throws Exception {
+        MockWebServer server = createMockWebServer();
+        String body = getResource("relation-expanded-success.json");
+        server.enqueue(new MockResponse().setBody(body));
+        AxObject object = Ax.find(COLLECTION_1, "123");
+
+        assertNotNull(object.get("messages"));
 
         assertNotNull(object.getAll("messages").get(0).getId());
         assertNotNull(object.getAll("messages").get(0).getOne("author").getId());
@@ -27,7 +47,7 @@ public class AxRelationsTest extends AxTest {
     }
 
     @org.junit.Test
-    public void shouldGetNewRelations() throws Exception {
+    public void shouldIncludeNewRelations() throws Exception {
         MockWebServer server = createMockWebServer();
 
         String body = getResource("save-object-success.json");

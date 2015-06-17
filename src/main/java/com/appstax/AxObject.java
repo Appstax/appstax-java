@@ -1,14 +1,12 @@
 package com.appstax;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class AxObject {
 
@@ -48,6 +46,21 @@ public final class AxObject {
 
     public String getString(String key) {
         return this.has(key) ? this.properties.getString(key) : null;
+    }
+
+    public List<String> getStrings(String key) {
+        if (!(this.get(key) instanceof JSONArray)) {
+            return null;
+        }
+
+        List<String> list = new ArrayList<>();
+        JSONArray json = (JSONArray) this.get(key);
+
+        for (int i = 0; i < json.length(); i++) {
+            list.add(json.getString(i));
+        }
+
+        return list;
     }
 
     public Object get(String key) {
