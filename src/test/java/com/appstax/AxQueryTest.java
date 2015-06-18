@@ -48,6 +48,19 @@ public class AxQueryTest extends AxTest {
     }
 
     @org.junit.Test
+    public void shouldAddExpansionProperty() throws Exception {
+        MockWebServer server = createMockWebServer();
+        String body = getResource("find-objects-success.json");
+        server.enqueue(new MockResponse().setBody(body));
+        List<AxObject> objects = Ax.find(COLLECTION_1, 2);
+
+        RecordedRequest req = server.takeRequest();
+        assertEquals("/objects/" + COLLECTION_1 + "?expanddepth=2", req.getPath());
+
+        server.shutdown();
+    }
+
+    @org.junit.Test
     public void shouldSendFilterString() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("find-objects-success.json");

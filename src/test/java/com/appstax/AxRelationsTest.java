@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 public class AxRelationsTest extends AxTest {
 
     @org.junit.Test
-    public void shouldParseUnexpandedRelations() throws Exception {
+    public void shouldParseUnexpandedObject() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("relation-unexpanded-success.json");
         server.enqueue(new MockResponse().setBody(body));
@@ -29,10 +29,11 @@ public class AxRelationsTest extends AxTest {
 
         server.shutdown();
     }
+
     @org.junit.Test
-    public void shouldParseExpandedRelations() throws Exception {
+    public void shouldParseExpandedObject() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("relation-expanded-success.json");
+        String body = getResource("relation-expanded-one-success.json");
         server.enqueue(new MockResponse().setBody(body));
         AxObject object = Ax.find(COLLECTION_1, "123");
 
@@ -41,6 +42,22 @@ public class AxRelationsTest extends AxTest {
         assertNotNull(object.getAll("messages").get(0).getId());
         assertNotNull(object.getAll("messages").get(0).getOne("author").getId());
         assertNotNull(object.getAll("messages").get(0).getAll("comments").get(0).getId());
+        assertNotNull(object.getAll("messages").get(0).getAll("comments").get(0).getOne("author").getId());
+
+        server.shutdown();
+    }
+
+    @org.junit.Test
+    public void shouldParseExpandedCollection() throws Exception {
+        MockWebServer server = createMockWebServer();
+        String body = getResource("relation-expanded-all-success.json");
+        server.enqueue(new MockResponse().setBody(body));
+        List<AxObject> objects = Ax.find(COLLECTION_1, 10);
+
+        assertEquals(1, objects.size());
+        AxObject object = objects.get(0);
+
+        assertNotNull(object.get("messages"));
         assertNotNull(object.getAll("messages").get(0).getAll("comments").get(0).getOne("author").getId());
 
         server.shutdown();

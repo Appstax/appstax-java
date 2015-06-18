@@ -46,11 +46,19 @@ public class Ax {
     }
 
     public static AxObject find(String collection, String id) {
-        return AxQuery.find(collection, id);
+        return AxQuery.find(collection, id, 0);
     }
 
     public static List<AxObject> find(String collection) {
-        return AxQuery.find(collection);
+        return AxQuery.find(collection, 0);
+    }
+
+    public static List<AxObject> find(String collection, int depth) {
+        return AxQuery.find(collection, depth);
+    }
+
+    public static AxObject find(String collection, String id, int depth) {
+        return AxQuery.find(collection, id, depth);
     }
 
     public static List<AxObject> filter(String collection, String filter) {

@@ -12,15 +12,15 @@ final class AxQuery {
     private static final String KEY_OBJECTS = "objects";
     private static final String OPERATOR = " and ";
 
-    protected static AxObject find(String collection, String id) {
-        String path = AxPaths.object(collection, id);
-        JSONObject properties = AxClient.request(AxClient.Method.GET, path);
-        return new AxObject(collection, properties);
+    protected static List<AxObject> find(String collection, int depth) {
+        String path = AxPaths.collection(collection, depth);
+        return objects(collection, AxClient.request(AxClient.Method.GET, path));
     }
 
-    protected static List<AxObject> find(String collection) {
-        String path = AxPaths.collection(collection);
-        return objects(collection, AxClient.request(AxClient.Method.GET, path));
+    protected static AxObject find(String collection, String id, int depth) {
+        String path = AxPaths.object(collection, id, depth);
+        JSONObject properties = AxClient.request(AxClient.Method.GET, path);
+        return new AxObject(collection, properties);
     }
 
     protected static List<AxObject> filter(String collection, String filter) {
