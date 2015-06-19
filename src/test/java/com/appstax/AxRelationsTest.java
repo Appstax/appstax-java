@@ -145,6 +145,23 @@ public class AxRelationsTest extends AxTest {
     }
 
     @org.junit.Test
+    public void shouldHandleRelationToUser() throws Exception {
+        MockWebServer server = createMockWebServer();
+        AxObject object = getObject(server);
+
+        enqueue(1, server, 200, getResource("save-object-success.json"));
+        AxUser user = new AxUser("foo", "bar");
+        user.put("1", "2");
+        Ax.save(user);
+
+        enqueue(1, server, 200, getResource("save-object-success.json"));
+        object.createRelation("author", user);
+        Ax.save(object);
+
+        server.shutdown();
+    }
+
+    @org.junit.Test
     public void shouldHandleCyclicalRelations() throws Exception {
         MockWebServer server = createMockWebServer();
         String body = getResource("save-object-success.json");

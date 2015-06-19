@@ -92,14 +92,4 @@ public class Ax {
         }
     }
 
-    public static AxUser save(AxUser user) {
-        user.getObject().save();
-        return user;
-    }
-
-    public static AxUser refresh(AxUser user) {
-        user.getObject().refresh();
-        return user;
-    }
-
 }

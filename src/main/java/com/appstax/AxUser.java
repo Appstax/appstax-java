@@ -1,35 +1,32 @@
 package com.appstax;
 
-public final class AxUser {
+import org.json.JSONObject;
+
+public final class AxUser extends AxObject {
 
     private String sessionId = null;
     private String username = null;
-    private AxObject object = null;
 
-    protected AxUser(String username, String session, AxObject object) {
+    public AxUser(JSONObject properties) {
+        super("users", properties);
+    }
+
+    public AxUser(String username, String sessionId, JSONObject properties) {
+        this(properties);
         this.username = username;
-        this.sessionId = session;
-        this.object = object;
+        this.sessionId = sessionId;
     }
 
-    protected AxObject getObject() {
-        return this.object;
-    }
-
-    public String getUsername() {
-        return this.username;
+    public AxUser(String username, String sessionId) {
+        this(username, sessionId, new JSONObject());
     }
 
     public String getSessionId() {
-        return this.sessionId;
+        return sessionId;
     }
 
-    public void put(String key, Object val) {
-        this.object.put(key, val);
-    }
-
-    public Object get(String key) {
-        return this.object.get(key);
+    public String getUsername() {
+        return username;
     }
 
 }

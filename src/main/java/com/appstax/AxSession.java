@@ -29,9 +29,7 @@ final class AxSession {
         req.put(KEY_PASSWORD, password);
 
         JSONObject res = AxClient.request(AxClient.Method.POST, path, req);
-        String session = res.getString(KEY_SESSIONID);
-        AxObject object = new AxObject(USERS, res.getJSONObject(KEY_OBJECT));
-        return new AxUser(username, session, object);
+        return new AxUser(username, res.getString(KEY_SESSIONID), res.getJSONObject(KEY_OBJECT));
     }
 
 }

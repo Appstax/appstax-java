@@ -8,7 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public final class AxObject {
+public class AxObject {
 
     protected static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
     protected static final String KEY_CREATED = "sysCreated";
