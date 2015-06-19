@@ -1,6 +1,5 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
@@ -11,8 +10,7 @@ public class AxSaveTest extends AxTest {
     @org.junit.Test
     public void shouldSaveObject() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("save-object-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        enqueue(1, server, 200, getResource("save-object-success.json"));
 
         AxObject object = new AxObject(COLLECTION_1);
         assertNull(object.getId());
@@ -33,8 +31,7 @@ public class AxSaveTest extends AxTest {
     @org.junit.Test(expected=AxException.class)
     public void shouldThrowOnSaveError() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("save-object-error.json");
-        server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
+        enqueue(1, server, 400, getResource("save-object-error.json"));
 
         AxObject object = new AxObject(COLLECTION_1);
         Ax.save(object);
@@ -44,10 +41,9 @@ public class AxSaveTest extends AxTest {
     @org.junit.Test
     public void shouldUpdateObject() throws Exception {
         MockWebServer server = createMockWebServer();
-        AxObject object = getObject(server);
+        enqueue(1, server, 200, getResource("save-object-success.json"));
 
-        String body = getResource("save-object-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        AxObject object = getObject(server);
         object.put(PROPERTY_1, "3");
         Ax.save(object);
 
@@ -63,10 +59,9 @@ public class AxSaveTest extends AxTest {
     @org.junit.Test(expected=AxException.class)
     public void shouldThrowOnUpdateError() throws Exception {
         MockWebServer server = createMockWebServer();
-        AxObject object = getObject(server);
+        enqueue(1, server, 400, getResource("save-object-error.json"));
 
-        String body = getResource("save-object-error.json");
-        server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
+        AxObject object = getObject(server);
         object.put(PROPERTY_1, "3");
         Ax.save(object);
 

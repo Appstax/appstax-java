@@ -43,8 +43,7 @@ public abstract class AxTest {
     }
 
     public AxObject getObject(MockWebServer server) throws Exception {
-        String body = getResource("find-object-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        enqueue(1, server, 200, getResource("find-object-success.json"));
         AxObject object = Ax.find(COLLECTION_1, "123");
 
         RecordedRequest req = server.takeRequest();
@@ -54,6 +53,12 @@ public abstract class AxTest {
         assertEquals("123", object.getId());
 
         return object;
+    }
+
+    public void enqueue(int times, MockWebServer server, int status, String body) {
+        for (int i = 0; i < times; i++) {
+            server.enqueue(new MockResponse().setBody(body).setResponseCode(status));
+        }
     }
 
 }

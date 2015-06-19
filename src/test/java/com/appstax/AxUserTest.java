@@ -18,8 +18,7 @@ public class AxUserTest extends AxTest {
     @org.junit.Test
     public void shouldCreateSignup() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("user-signup-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        enqueue(1, server, 200, getResource("user-signup-success.json"));
 
         Ax.signup("foo", "bar");
         checkCurrentUser("foo");
@@ -35,8 +34,7 @@ public class AxUserTest extends AxTest {
     @org.junit.Test(expected=AxException.class)
     public void ShouldThrowOnSignupError() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("user-signup-error.json");
-        server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
+        enqueue(1, server, 400, getResource("user-signup-error.json"));
 
         Ax.signup("foo", "bar");
         assertEquals(null, Ax.getCurrentUser());
@@ -46,8 +44,7 @@ public class AxUserTest extends AxTest {
     @org.junit.Test
     public void shouldCreateLogin() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("user-login-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        enqueue(1, server, 200, getResource("user-login-success.json"));
 
         Ax.login("baz", "boo");
         checkCurrentUser("baz");
@@ -63,8 +60,7 @@ public class AxUserTest extends AxTest {
     @org.junit.Test
     public void shouldThrowOnLoginError() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("user-login-error.json");
-        server.enqueue(new MockResponse().setBody(body).setResponseCode(400));
+        enqueue(1, server, 400, getResource("user-login-error.json"));
 
         try {
             Ax.login("foo", "bar");
@@ -79,15 +75,14 @@ public class AxUserTest extends AxTest {
     @org.junit.Test
     public void shouldCreateLogout() throws Exception {
         MockWebServer server = createMockWebServer();
+        enqueue(1, server, 204, getResource("user-login-success.json"));
 
-        String body = getResource("user-login-success.json");
-        server.enqueue(new MockResponse().setBody(body).setResponseCode(204));
         Ax.login("baz", "boo");
         checkCurrentUser("baz");
         RecordedRequest req = server.takeRequest();
         assertEquals("/sessions", req.getPath());
 
-        server.enqueue(new MockResponse().setBody("").setResponseCode(204));
+        enqueue(1, server, 204, "");
         Ax.logout();
 
         assertEquals(null, Ax.getCurrentUser());
@@ -101,9 +96,8 @@ public class AxUserTest extends AxTest {
     @org.junit.Test
     public void shouldAllowUserProperties() throws Exception {
         MockWebServer server = createMockWebServer();
+        enqueue(1, server, 200, getResource("user-login-success.json"));
 
-        String body = getResource("user-login-success.json");
-        server.enqueue(new MockResponse().setBody(body));
         Ax.login("foo", "bar");
         checkCurrentUser("foo");
 
@@ -111,8 +105,7 @@ public class AxUserTest extends AxTest {
         user.put("1", "2");
         assertEquals("2", user.get("1"));
 
-        body = getResource("save-object-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        enqueue(1, server, 200, getResource("save-object-success.json"));
         Ax.save(user);
 
         assertEquals("2", user.get("1"));
@@ -123,7 +116,7 @@ public class AxUserTest extends AxTest {
     }
 
     public void logout(MockWebServer server) throws Exception {
-        server.enqueue(new MockResponse().setBody(""));
+        enqueue(1, server, 200, "");
         Ax.logout();
         assertEquals(null, Ax.getCurrentUser());
     }

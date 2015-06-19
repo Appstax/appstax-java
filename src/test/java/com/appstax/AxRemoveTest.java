@@ -11,12 +11,12 @@ public class AxRemoveTest extends AxTest {
     @org.junit.Test
     public void shouldRemoveObject() throws Exception {
         MockWebServer server = createMockWebServer();
+
         AxObject object = getObject(server);
-
-        server.enqueue(new MockResponse().setBody(""));
         assertEquals("123", object.getId());
-        Ax.remove(object);
 
+        enqueue(1, server, 200, "");
+        Ax.remove(object);
         assertEquals(null, object.getId());
         assertEquals(null, object.get("title"));
 
@@ -30,8 +30,7 @@ public class AxRemoveTest extends AxTest {
     @org.junit.Test(expected=AxException.class)
     public void shouldThrowOnRemoveUnsaved() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("remove-object-error.json");
-        server.enqueue(new MockResponse().setBody(body).setResponseCode(404));
+        enqueue(1, server, 404, getResource("remove-object-error.json"));
 
         AxObject object = new AxObject(COLLECTION_1);
         Ax.remove(object);

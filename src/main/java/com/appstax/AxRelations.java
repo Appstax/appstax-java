@@ -61,15 +61,7 @@ final class AxRelations {
         add(relation, this.removals, objects);
     }
 
-    protected void save() {
-        for (List<AxObject> objects : this.relations.values()) {
-            for (AxObject object : objects) {
-                object.saveAll();
-            }
-        }
-    }
-
-    protected void append(AxObject object) {
+    protected void appendChanges(AxObject object) {
         if (additions.isEmpty() && removals.isEmpty()) {
             return;
         }
@@ -81,7 +73,7 @@ final class AxRelations {
         }
     }
 
-    protected void remove(AxObject object) {
+    protected void removeChanges(AxObject object) {
         for (String key : keys()) {
             JSONObject relation = (JSONObject) object.get(key);
             relation.remove(KEY_CHANGES);
@@ -90,11 +82,21 @@ final class AxRelations {
         this.removals = new HashMap<>();
     }
 
-    private Set<String> keys() {
+    protected Set<String> keys() {
         Set<String> keys = new HashSet<>();
         keys.addAll(additions.keySet());
         keys.addAll(removals.keySet());
         return keys;
+    }
+
+    protected void flatten(Set<AxObject> objects) {
+        for (List<AxObject> list : relations.values()) {
+            for (AxObject object : list) {
+                if (!objects.contains(object)) {
+                    object.flatten(objects);
+                }
+            }
+        }
     }
 
     private List<AxObject> verify(AxObject... objects) {

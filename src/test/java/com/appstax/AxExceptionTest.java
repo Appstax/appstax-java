@@ -10,7 +10,7 @@ public class AxExceptionTest extends AxTest {
     @org.junit.Test
     public void shouldThrowOnServerError() throws Exception {
         MockWebServer server = createMockWebServer();
-        server.enqueue(new MockResponse().setBody(getResource("save-object-error.json")).setResponseCode(400));
+        enqueue(1, server, 400, getResource("save-object-error.json"));
 
         try {
             Ax.save(new AxObject("c"));

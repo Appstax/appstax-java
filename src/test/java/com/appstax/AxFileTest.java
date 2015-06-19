@@ -1,6 +1,5 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
@@ -11,17 +10,16 @@ public class AxFileTest extends AxTest {
     @org.junit.Test
     public void shouldUploadFilesOnSave() throws Exception {
         MockWebServer server = createMockWebServer();
-
-        server.enqueue(new MockResponse().setBody(getResource("save-object-success.json")));
-        server.enqueue(new MockResponse().setBody(""));
+        enqueue(1, server, 200, getResource("save-object-success.json"));
+        enqueue(1, server, 200, "");
 
         String filename = "file-example-image.jpg";
         AxObject object = new AxObject(COLLECTION_2);
         AxFile file = new AxFile(filename, getResource(filename).getBytes());
         object.put("image", file);
-
         assertNull(object.getId());
         assertNull(object.getFile("image").getUrl());
+
         Ax.save(object);
         assertNotNull(object.getId());
         assertNotNull(object.getFile("image").getUrl());
@@ -46,10 +44,8 @@ public class AxFileTest extends AxTest {
     @org.junit.Test
     public void shuldUploadMultipleFilesOnSave() throws Exception {
         MockWebServer server = createMockWebServer();
-        server.enqueue(new MockResponse().setBody(getResource("save-object-success.json")));
-        server.enqueue(new MockResponse().setBody(""));
-        server.enqueue(new MockResponse().setBody(""));
-        server.enqueue(new MockResponse().setBody(""));
+        enqueue(1, server, 200, getResource("save-object-success.json"));
+        enqueue(3, server, 200, "");
 
         String filename = "file-example-image.jpg";
         AxObject object = new AxObject(COLLECTION_2);
@@ -76,12 +72,7 @@ public class AxFileTest extends AxTest {
     @org.junit.Test
     public void testFileUploadOnceSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
-        String res = getResource("save-object-success.json");
-        server.enqueue(new MockResponse().setBody(res));
-        server.enqueue(new MockResponse().setBody(""));
-        server.enqueue(new MockResponse().setBody(res));
-        server.enqueue(new MockResponse().setBody(res));
-        server.enqueue(new MockResponse().setBody(res));
+        enqueue(3, server, 200, getResource("save-object-success.json"));
 
         String filename = "file-example-image.jpg";
         AxObject object = new AxObject(COLLECTION_2);
@@ -98,7 +89,7 @@ public class AxFileTest extends AxTest {
     @org.junit.Test
     public void testFileGetSuccess() throws Exception {
         MockWebServer server = createMockWebServer();
-        server.enqueue(new MockResponse().setBody(getResource("find-file-success.json")));
+        enqueue(1, server, 200, getResource("find-file-success.json"));
 
         String name = "file-example-image.jpg";
         AxObject object = Ax.find(COLLECTION_1, "123");
@@ -114,7 +105,7 @@ public class AxFileTest extends AxTest {
         String act = file.getUrl();
         assertEquals(exp, act);
 
-        server.enqueue(new MockResponse().setBody(getResource("file-example-image.jpg")));
+        enqueue(1, server, 200, getResource("file-example-image.jpg"));
         file.load();
         assertNotNull(file.getData());
 
@@ -129,13 +120,12 @@ public class AxFileTest extends AxTest {
     @org.junit.Test(expected=AxException.class)
     public void testFileGetError() throws Exception {
         MockWebServer server = createMockWebServer();
-        server.enqueue(new MockResponse().setBody(getResource("find-file-success.json")));
+        enqueue(1, server, 200, getResource("find-file-success.json"));
+        enqueue(1, server, 400, getResource("find-object-error.json"));
 
         AxObject object = Ax.find(COLLECTION_1, "123");
         AxFile file = object.getFile("file");
         assertNull(file.getData());
-
-        server.enqueue(new MockResponse().setBody(getResource("find-object-error.json")).setResponseCode(400));
 
         file.load();
         server.shutdown();

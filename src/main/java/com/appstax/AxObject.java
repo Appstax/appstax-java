@@ -157,18 +157,23 @@ public final class AxObject {
     }
 
     protected AxObject save() {
-        relations.append(this);
+        relations.appendChanges(this);
         saveObject();
-        relations.remove(this);
+        relations.removeChanges(this);
         permissions.save();
         saveFiles();
         return this;
     }
 
-    protected AxObject saveAll() {
-        this.relations.save();
-        this.save();
-        return this;
+    protected Set<AxObject> flatten(Set<AxObject> objects) {
+        if (objects == null) {
+            objects = new HashSet<>();
+        }
+        if (!objects.contains(this)) {
+            objects.add(this);
+            this.relations.flatten(objects);
+        }
+        return objects;
     }
 
     protected AxObject remove() {

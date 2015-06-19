@@ -1,6 +1,5 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
@@ -11,11 +10,10 @@ public class AxRefreshTest extends AxTest {
     @org.junit.Test
     public void shouldRefreshObject() throws Exception {
         MockWebServer server = createMockWebServer();
+        enqueue(1, server, 200, getResource("find-object-success.json"));
+
         AxObject object = getObject(server);
         object.put("title", "unsaved");
-
-        String body = getResource("find-object-success.json");
-        server.enqueue(new MockResponse().setBody(body));
         Ax.refresh(object);
 
         RecordedRequest req = server.takeRequest();

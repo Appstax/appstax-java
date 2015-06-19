@@ -1,7 +1,6 @@
 package com.appstax;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Ax {
 
@@ -30,7 +29,10 @@ public class Ax {
     }
 
     public static AxObject saveAll(AxObject object) {
-        return object.saveAll();
+        for (AxObject target : object.flatten(null)) {
+            target.save();
+        }
+        return object;
     }
 
     public static AxObject remove(AxObject object) {

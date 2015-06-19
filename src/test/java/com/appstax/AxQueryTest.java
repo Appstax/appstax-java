@@ -26,9 +26,7 @@ public class AxQueryTest extends AxTest {
     @org.junit.Test(expected=AxException.class)
     public void shouldThrowOnFindError() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("find-object-error.json");
-        server.enqueue(new MockResponse().setBody(body).setResponseCode(404));
-
+        enqueue(1, server, 400, getResource("find-object-error.json"));
         AxObject object = Ax.find(COLLECTION_1, "404");
         server.shutdown();
     }
@@ -36,8 +34,7 @@ public class AxQueryTest extends AxTest {
     @org.junit.Test
     public void shouldFindMultipleObjects() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("find-objects-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        enqueue(1, server, 200, getResource("find-objects-success.json"));
 
         List<AxObject> objects = Ax.find(COLLECTION_1);
         assertEquals(3, objects.size());
@@ -50,10 +47,9 @@ public class AxQueryTest extends AxTest {
     @org.junit.Test
     public void shouldAddExpansionProperty() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("find-objects-success.json");
-        server.enqueue(new MockResponse().setBody(body));
-        List<AxObject> objects = Ax.find(COLLECTION_1, 2);
+        enqueue(1, server, 200, getResource("find-objects-success.json"));
 
+        List<AxObject> objects = Ax.find(COLLECTION_1, 2);
         RecordedRequest req = server.takeRequest();
         assertEquals("/objects/" + COLLECTION_1 + "?expanddepth=2", req.getPath());
 
@@ -63,15 +59,13 @@ public class AxQueryTest extends AxTest {
     @org.junit.Test
     public void shouldSendFilterString() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("find-objects-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        enqueue(1, server, 200, getResource("find-objects-success.json"));
 
         List<AxObject> objects = Ax.filter(COLLECTION_1, "Age > 42 and name like 'Alex%'");
         assertEquals(3, objects.size());
 
         RecordedRequest req = server.takeRequest();
         assertEquals("GET", req.getMethod());
-
         String expected = "filter=Age+%3E+42+and+name+like+%27Alex%25%27";
         String actual = req.getPath().substring(req.getPath().indexOf("filter"));
         assertEquals(expected, actual);
@@ -82,8 +76,7 @@ public class AxQueryTest extends AxTest {
     @org.junit.Test
     public void shouldSendFilterProperties() throws Exception {
         MockWebServer server = createMockWebServer();
-        String body = getResource("find-objects-success.json");
-        server.enqueue(new MockResponse().setBody(body));
+        enqueue(1, server, 200, getResource("find-objects-success.json"));
 
         HashMap properties = new HashMap<String, String>();
         properties.put("foo", "b r");
