@@ -73,17 +73,28 @@ final class AxRelations {
         if (additions.isEmpty() && removals.isEmpty()) {
             return;
         }
-
-        Set<String> keys = new HashSet<>();
-        keys.addAll(additions.keySet());
-        keys.addAll(removals.keySet());
-
-        for (String key : keys) {
+        for (String key : keys()) {
             object.put(key, toJSON(
                     additions.get(key),
                     removals.get(key)
             ));
         }
+    }
+
+    protected void remove(AxObject object) {
+        for (String key : keys()) {
+            JSONObject relation = (JSONObject) object.get(key);
+            relation.remove(KEY_CHANGES);
+        }
+        this.additions = new HashMap<>();
+        this.removals = new HashMap<>();
+    }
+
+    private Set<String> keys() {
+        Set<String> keys = new HashSet<>();
+        keys.addAll(additions.keySet());
+        keys.addAll(removals.keySet());
+        return keys;
     }
 
     private List<AxObject> verify(AxObject... objects) {

@@ -25,7 +25,7 @@ public class AxRelationsTest extends AxTest {
         expected.add("DQXzz4BSAreWq");
 
         assertEquals(expected, actual);
-        assertNull(object.getAll("messages"));
+        assertNull(object.getObjects("messages"));
 
         server.shutdown();
     }
@@ -35,14 +35,14 @@ public class AxRelationsTest extends AxTest {
         MockWebServer server = createMockWebServer();
         String body = getResource("relation-expanded-one-success.json");
         server.enqueue(new MockResponse().setBody(body));
-        AxObject object = Ax.find(COLLECTION_1, "123");
+        AxObject object = Ax.find(COLLECTION_1, "123", 10);
 
         assertNotNull(object.get("messages"));
 
-        assertNotNull(object.getAll("messages").get(0).getId());
-        assertNotNull(object.getAll("messages").get(0).getOne("author").getId());
-        assertNotNull(object.getAll("messages").get(0).getAll("comments").get(0).getId());
-        assertNotNull(object.getAll("messages").get(0).getAll("comments").get(0).getOne("author").getId());
+        assertNotNull(object.getObjects("messages").get(0).getId());
+        assertNotNull(object.getObjects("messages").get(0).getObject("author").getId());
+        assertNotNull(object.getObjects("messages").get(0).getObjects("comments").get(0).getId());
+        assertNotNull(object.getObjects("messages").get(0).getObjects("comments").get(0).getObject("author").getId());
 
         server.shutdown();
     }
@@ -58,7 +58,7 @@ public class AxRelationsTest extends AxTest {
         AxObject object = objects.get(0);
 
         assertNotNull(object.get("messages"));
-        assertNotNull(object.getAll("messages").get(0).getAll("comments").get(0).getOne("author").getId());
+        assertNotNull(object.getObjects("messages").get(0).getObjects("comments").get(0).getObject("author").getId());
 
         server.shutdown();
     }
@@ -84,7 +84,7 @@ public class AxRelationsTest extends AxTest {
         object3.put("name", name);
         object2.createRelation("author", object3);
         object1.createRelation("posts", object2);
-        assertEquals(name, object1.getAll("posts").get(0).getOne("author").get("name"));
+        assertEquals(name, object1.getObjects("posts").get(0).getObject("author").get("name"));
 
         server.shutdown();
     }
@@ -98,22 +98,29 @@ public class AxRelationsTest extends AxTest {
         AxObject object3 = getObject(server);
         AxObject object4 = getObject(server);
 
+        String rel1 = "\"messages\":{\"sysRelationChanges\":{\"additions\":[\"123\",\"123\"],\"removals\":[\"123\"]}}";
+        String rel2 = "\"comments\":{\"sysRelationChanges\":{\"additions\":[\"123\",\"123\"]}}";
+
         String body = getResource("save-object-success.json");
+        server.enqueue(new MockResponse().setBody(body));
         server.enqueue(new MockResponse().setBody(body));
 
         object1
             .createRelation("messages", object2, object3)
             .removeRelation("messages", object4)
             .createRelation("comments", object2, object2);
+
         Ax.save(object1);
+        RecordedRequest req1 = server.takeRequest();
+        String res1 = req1.getBody().readUtf8();
+        assertTrue(res1.contains(rel1));
+        assertTrue(res1.contains(rel2));
 
-        RecordedRequest req = server.takeRequest();
-        String res = req.getBody().readUtf8();
-
-        String rel1 = "\"messages\":{\"sysRelationChanges\":{\"additions\":[\"123\",\"123\"],\"removals\":[\"123\"]}}";
-        String rel2 = "\"comments\":{\"sysRelationChanges\":{\"additions\":[\"123\",\"123\"]}}";
-        assertTrue(res.contains(rel1));
-        assertTrue(res.contains(rel2));
+        Ax.save(object1);
+        RecordedRequest req2 = server.takeRequest();
+        String res2 = req2.getBody().readUtf8();
+        assertFalse(res2.contains(rel1));
+        assertFalse(res2.contains(rel2));
 
         server.shutdown();
     }
@@ -139,22 +146,19 @@ public class AxRelationsTest extends AxTest {
         AxObject object1 = getObject(server);
         AxObject object2 = getObject(server);
         AxObject object3 = getObject(server);
-        AxObject object4 = getObject(server);
 
         String body = getResource("save-object-success.json");
         server.enqueue(new MockResponse().setBody(body));
         server.enqueue(new MockResponse().setBody(body));
         server.enqueue(new MockResponse().setBody(body));
         server.enqueue(new MockResponse().setBody(body));
-        server.enqueue(new MockResponse().setBody(body));
 
-        object3.createRelation("rel4", object4);
         object2.createRelation("rel3", object3);
         object1.createRelation("rel2", object2);
-        Ax.saveAll(object4);
+        Ax.saveAll(object3);
         Ax.saveAll(object1);
 
-        assertEquals(9, server.getRequestCount());
+        assertEquals(7, server.getRequestCount());
 
         server.shutdown();
     }

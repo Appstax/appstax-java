@@ -138,12 +138,12 @@ public final class AxObject {
         return this;
     }
 
-    public List<AxObject> getAll(String relation) {
-        return this.relations.all(relation);
+    public AxObject getObject(String relation) {
+        return this.relations.one(relation);
     }
 
-    public AxObject getOne(String relation) {
-        return this.relations.one(relation);
+    public List<AxObject> getObjects(String relation) {
+        return this.relations.all(relation);
     }
 
     public AxObject createRelation(String relation, AxObject... additions) {
@@ -159,6 +159,7 @@ public final class AxObject {
     protected AxObject save() {
         relations.append(this);
         saveObject();
+        relations.remove(this);
         permissions.save();
         saveFiles();
         return this;
