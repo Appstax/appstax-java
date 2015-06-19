@@ -45,16 +45,16 @@ public class Ax {
         return file.load();
     }
 
-    public static AxObject find(String collection, String id) {
-        return AxQuery.find(collection, id, 0);
-    }
-
     public static List<AxObject> find(String collection) {
         return AxQuery.find(collection, 0);
     }
 
     public static List<AxObject> find(String collection, int depth) {
         return AxQuery.find(collection, depth);
+    }
+
+    public static AxObject find(String collection, String id) {
+        return AxQuery.find(collection, id, 0);
     }
 
     public static AxObject find(String collection, String id, int depth) {
