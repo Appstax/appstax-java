@@ -170,13 +170,12 @@ final class AxRelations {
 
             JSONArray items = property.getJSONArray(KEY_OBJECTS);
             String collection = property.getString(KEY_COLLECTION);
+            properties.remove(key);
 
             if (items.get(0) instanceof JSONObject) {
                 List<AxObject> objects = parseObjects(collection, items);
-                JSONArray ids = collectIds(objects);
+                properties.put(key, collectIds(objects));
                 relations.put(key, objects);
-                properties.remove(key);
-                properties.put(key, ids);
             } else {
                 properties.put(key, items);
             }
