@@ -158,8 +158,10 @@ final class AxRelations {
     private Map<String, List<AxObject>> parse(JSONObject properties) {
         Map<String, List<AxObject>> relations = new HashMap<>();
 
-        for(Iterator<String> it = properties.keys(); it.hasNext(); ) {
-            String key = it.next();
+        List<String> keys = new ArrayList<>();
+        keys.addAll(properties.keySet());
+
+        for (String key : keys) {
             JSONObject property = parseRelation(properties, key);
 
             if (property == null) {
@@ -171,8 +173,10 @@ final class AxRelations {
 
             if (items.get(0) instanceof JSONObject) {
                 List<AxObject> objects = parseObjects(collection, items);
-                properties.put(key, collectIds(objects));
+                JSONArray ids = collectIds(objects);
                 relations.put(key, objects);
+                properties.remove(key);
+                properties.put(key, ids);
             } else {
                 properties.put(key, items);
             }
@@ -206,11 +210,11 @@ final class AxRelations {
         return objects;
     }
 
-    private List<String> collectIds(List<AxObject> objects) {
-        List<String> ids = new ArrayList<>();
+    private JSONArray collectIds(List<AxObject> objects) {
+        JSONArray ids = new JSONArray();
 
         for (AxObject object : objects) {
-            ids.add(object.getId());
+            ids.put(object.getId());
         }
 
         return ids;

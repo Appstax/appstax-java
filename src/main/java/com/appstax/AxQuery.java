@@ -47,7 +47,9 @@ final class AxQuery {
         JSONArray array = json.getJSONArray(KEY_OBJECTS);
 
         for(int i = 0; i < array.length(); i++) {
-            objects.add(new AxObject(collection, array.getJSONObject(i)));
+            JSONObject properties = array.getJSONObject(i);
+            AxObject object = new AxObject(collection, properties);
+            objects.add(object);
         }
 
         return objects;

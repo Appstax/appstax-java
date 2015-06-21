@@ -44,6 +44,21 @@ public class AxRelationsTest extends AxTest {
     }
 
     @org.junit.Test
+    public void shouldParseUserRelation() throws Exception {
+        MockWebServer server = createMockWebServer();
+        enqueue(1, server, 200, getResource("relation-users-success.json"));
+        List<AxObject> objects = Ax.find(COLLECTION_1, 1);
+
+        assertEquals(2, objects.size());
+        assertNotNull(objects.get(0).getFile("image").getUrl());
+        assertEquals("GrAjO8Fa2zLz", objects.get(0).getStrings("user").get(0));
+        assertEquals("GrAjO8Fa2zLz", objects.get(0).getObject("user").getId());
+        assertEquals("GrAjO8Fa2zLz", objects.get(0).getObjects("user").get(0).getId());
+
+        server.shutdown();
+    }
+
+    @org.junit.Test
     public void shouldParseExpandedCollection() throws Exception {
         MockWebServer server = createMockWebServer();
         enqueue(1, server, 200, getResource("relation-expanded-all-success.json"));
