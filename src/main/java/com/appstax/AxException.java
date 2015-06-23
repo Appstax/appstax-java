@@ -17,10 +17,11 @@ public final class AxException extends RuntimeException {
 
     public AxException(String message, Throwable e) {
         super(message, e);
+        this.message = message;
     }
 
     public AxException(String message) {
-        super(message, null);
+        this(message, null);
     }
 
     public int getStatus() {

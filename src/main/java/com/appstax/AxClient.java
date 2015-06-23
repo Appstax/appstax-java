@@ -154,11 +154,13 @@ final class AxClient {
     }
 
     private static JSONObject parse(String body) {
-        if (body.length() > 0) {
-            return new JSONObject(body);
-        } else {
+        if (body == null || body.length() == 0) {
             return new JSONObject();
         }
+        if (body.startsWith("{")) {
+            return new JSONObject(body);
+        }
+        throw new AxException(body);
     }
 
 }
