@@ -1,16 +1,14 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
-import com.squareup.okhttp.mockwebserver.MockWebServer;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class AxExceptionTest extends AxTest {
 
-    @org.junit.Test
-    public void shouldThrowOnServerError() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 400, getResource("save-object-error.json"));
+    @Test
+    public void badReq() throws Exception {
+        enqueue(1, 400, getResource("save-object-error.json"));
 
         try {
             Ax.save(new AxObject("c"));
@@ -20,8 +18,6 @@ public class AxExceptionTest extends AxTest {
             assertEquals("ErrBadRequest", e.getCode());
             assertEquals("Hmm.", e.getMessage());
         }
-
-        server.shutdown();
     }
 
 

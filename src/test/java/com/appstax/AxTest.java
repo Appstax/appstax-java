@@ -2,15 +2,16 @@ package com.appstax;
 
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
-import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
-import static org.junit.Assert.assertEquals;
 
 public abstract class AxTest {
 
@@ -24,16 +25,25 @@ public abstract class AxTest {
     public static final String PROPERTY_2 = "property2";
     public static final String PROPERTY_3 = "property3";
 
+    protected MockWebServer server;
+
+    @Rule
+    public Timeout globalTimeout = new Timeout(5000);
+
     @Before
-    public void before() {
+    public void before() throws Exception {
         Ax.setAppKey(APP_KEY_1);
+
+        server = new MockWebServer();
+        server.start();
+
+        Ax.setApiUrl(server.getUrl("/").toString());
+        Ax.setApiSocket(server.getUrl("/").toString());
     }
 
-    public MockWebServer createMockWebServer() throws IOException {
-        MockWebServer mock = new MockWebServer();
-        mock.start();
-        Ax.setApiUrl(mock.getUrl("/").toString());
-        return mock;
+    @After
+    public void after() throws Exception {
+        server.shutdown();
     }
 
     public String getResource(String path) throws IOException {
@@ -42,20 +52,13 @@ public abstract class AxTest {
         return new String(encoded, StandardCharsets.UTF_8);
     }
 
-    public AxObject getObject(MockWebServer server) throws Exception {
-        enqueue(1, server, 200, getResource("find-object-success.json"));
-        AxObject object = Ax.find(COLLECTION_1, "123");
-
-        RecordedRequest req = server.takeRequest();
-        assertEquals("GET", req.getMethod());
-        assertEquals("", req.getBody().readUtf8());
-        assertEquals("/objects/" + COLLECTION_1 + "/" + object.getId(), req.getPath());
-        assertEquals("123", object.getId());
-
-        return object;
+    public AxObject getObject() throws Exception {
+        String json = getResource("find-object-success.json");
+        JSONObject props = new JSONObject(json);
+        return new AxObject(COLLECTION_1, props);
     }
 
-    public void enqueue(int times, MockWebServer server, int status, String body) {
+    public void enqueue(int times, int status, String body) {
         for (int i = 0; i < times; i++) {
             server.enqueue(new MockResponse().setBody(body).setResponseCode(status));
         }

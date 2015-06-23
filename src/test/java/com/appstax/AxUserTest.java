@@ -1,9 +1,9 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -11,14 +11,13 @@ import static org.junit.Assert.assertTrue;
 public class AxUserTest extends AxTest {
 
     @Before
-    public void shouldHaveNoDefaultUser() throws Exception {
+    public void blank() throws Exception {
         assertEquals(null, Ax.getCurrentUser());
     }
 
-    @org.junit.Test
-    public void shouldCreateSignup() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 200, getResource("user-signup-success.json"));
+    @Test
+    public void signup() throws Exception {
+        enqueue(1, 200, getResource("user-signup-success.json"));
 
         Ax.signup("foo", "bar");
         checkCurrentUser("foo");
@@ -28,23 +27,19 @@ public class AxUserTest extends AxTest {
         assertEquals("/users", req.getPath());
 
         logout(server);
-        server.shutdown();
     }
 
-    @org.junit.Test(expected=AxException.class)
-    public void ShouldThrowOnSignupError() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 400, getResource("user-signup-error.json"));
+    @Test(expected=AxException.class)
+    public void signupError() throws Exception {
+        enqueue(1, 400, getResource("user-signup-error.json"));
 
         Ax.signup("foo", "bar");
         assertEquals(null, Ax.getCurrentUser());
-        server.shutdown();
     }
 
-    @org.junit.Test
-    public void shouldCreateLogin() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 200, getResource("user-login-success.json"));
+    @Test
+    public void login() throws Exception {
+        enqueue(1, 200, getResource("user-login-success.json"));
 
         Ax.login("baz", "boo");
         checkCurrentUser("baz");
@@ -54,13 +49,11 @@ public class AxUserTest extends AxTest {
         assertEquals("/sessions", req.getPath());
 
         logout(server);
-        server.shutdown();
     }
 
-    @org.junit.Test
-    public void shouldThrowOnLoginError() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 400, getResource("user-login-error.json"));
+    @Test
+    public void loginError() throws Exception {
+        enqueue(1, 400, getResource("user-login-error.json"));
 
         try {
             Ax.login("foo", "bar");
@@ -69,20 +62,18 @@ public class AxUserTest extends AxTest {
         }
 
         assertEquals(null, Ax.getCurrentUser());
-        server.shutdown();
     }
 
-    @org.junit.Test
-    public void shouldCreateLogout() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 204, getResource("user-login-success.json"));
+    @Test
+    public void logout() throws Exception {
+        enqueue(1, 200, getResource("user-login-success.json"));
 
         Ax.login("baz", "boo");
         checkCurrentUser("baz");
         RecordedRequest req = server.takeRequest();
         assertEquals("/sessions", req.getPath());
 
-        enqueue(1, server, 204, "");
+        enqueue(1, 204, "");
         Ax.logout();
 
         assertEquals(null, Ax.getCurrentUser());
@@ -90,13 +81,11 @@ public class AxUserTest extends AxTest {
         assertEquals("DELETE", req.getMethod());
         assertTrue(req.getPath().startsWith("/sessions/"));
 
-        server.shutdown();
     }
 
-    @org.junit.Test
-    public void shouldAllowUserProperties() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 200, getResource("user-login-success.json"));
+    @Test
+    public void properties() throws Exception {
+        enqueue(1, 200, getResource("user-login-success.json"));
 
         Ax.login("foo", "bar");
         checkCurrentUser("foo");
@@ -105,18 +94,17 @@ public class AxUserTest extends AxTest {
         user.put("1", "2");
         assertEquals("2", user.get("1"));
 
-        enqueue(1, server, 200, getResource("save-object-success.json"));
+        enqueue(1, 200, getResource("save-object-success.json"));
         Ax.save(user);
 
         assertEquals("2", user.get("1"));
         assertEquals("2", Ax.getCurrentUser().get("1"));
 
         logout(server);
-        server.shutdown();
     }
 
     public void logout(MockWebServer server) throws Exception {
-        enqueue(1, server, 200, "");
+        enqueue(1, 200, "");
         Ax.logout();
         assertEquals(null, Ax.getCurrentUser());
     }

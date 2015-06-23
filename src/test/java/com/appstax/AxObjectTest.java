@@ -1,19 +1,20 @@
 package com.appstax;
 
 import org.json.JSONException;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class AxObjectTest extends AxTest {
 
-    @org.junit.Test
-    public void shouldSetCollectionName() {
+    @Test
+    public void collection() {
         AxObject object = new AxObject(COLLECTION_1);
         assertEquals(COLLECTION_1, object.getCollection());
     }
 
-    @org.junit.Test
-    public void shouldSetProperties() {
+    @Test
+    public void properties() {
         AxObject object = new AxObject(COLLECTION_1);
         object.put(PROPERTY_1, 1);
         object.put(PROPERTY_2, 1.1);

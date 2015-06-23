@@ -1,6 +1,8 @@
 package com.appstax;
 
 import com.squareup.okhttp.*;
+import com.squareup.okhttp.ws.WebSocketCall;
+import com.squareup.okhttp.ws.WebSocketListener;
 import okio.BufferedSink;
 import org.json.JSONObject;
 
@@ -30,6 +32,10 @@ final class AxClient {
         DELETE
     }
 
+    protected static void socket(String path, WebSocketListener listener) {
+        WebSocketCall.create(client, emptyRequest(Method.GET, path)).enqueue(listener);
+    }
+
     protected static JSONObject request(Method method, String path) {
         return request(method, path, null);
     }
@@ -44,7 +50,7 @@ final class AxClient {
 
     protected static byte[] file(Method method, String path) {
         try {
-            Request req = fileRequest(method, path);
+            Request req = emptyRequest(method, path);
             Response res = client.newCall(req).execute();
             checkReturnCode(res);
             return res.body().bytes();
@@ -99,15 +105,16 @@ final class AxClient {
         return req.build();
     }
 
-    private static Request fileRequest(Method method, String path) {
+    private static Request emptyRequest(Method method, String path) {
         Request.Builder req = new Request.Builder();
         setPath(req, path);
         setKeys(req);
+        setBody(req, method, null);
         return req.build();
     }
 
     private static void setPath(Request.Builder req, String path) {
-        req.url(Ax.getApiUrl() + path);
+        req.url(path);
     }
 
     private static void setKeys(Request.Builder req) {

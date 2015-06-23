@@ -1,6 +1,6 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockWebServer;
+import org.junit.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -10,22 +10,19 @@ import static org.junit.Assert.assertEquals;
 
 public class AxDateTest extends AxTest {
 
-    @org.junit.Test
-    public void shouldParseSystemDates() throws Exception {
-        MockWebServer server = createMockWebServer();
-        AxObject object = getObject(server);
+    @Test
+    public void system() throws Exception {
+        AxObject object = getObject();
         Date created = object.getCreated();
         Date updated = object.getUpdated();
 
         DateFormat target = new SimpleDateFormat("dd/MM/yyyy HH:mm (ss)");
         assertEquals("06/05/2015 10:36 (29)", target.format(created));
         assertEquals("07/05/2015 07:28 (43)", target.format(updated));
-
-        server.shutdown();
     }
 
-    @org.junit.Test
-    public void shouldParseCustomDates() throws Exception {
+    @Test
+    public void custom() throws Exception {
         String format = "yyyy dd/MM @ HH:mm";
         String dateString1 = "1980 20/10 @ 12:13";
         String dateString2 = "2022 30/12 @ 01:02";

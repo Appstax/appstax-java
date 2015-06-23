@@ -1,17 +1,16 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class AxFileTest extends AxTest {
 
-    @org.junit.Test
-    public void shouldUploadFilesOnSave() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 200, getResource("save-object-success.json"));
-        enqueue(1, server, 200, "");
+    @Test
+    public void saveOne() throws Exception {
+        enqueue(1, 200, getResource("save-object-success.json"));
+        enqueue(1, 200, "");
 
         String filename = "file-example-image.jpg";
         AxObject object = new AxObject(COLLECTION_2);
@@ -33,19 +32,16 @@ public class AxFileTest extends AxTest {
         RecordedRequest req2 = server.takeRequest();
         String multipart = req2.getBody().readUtf8();
         assertEquals("PUT", req2.getMethod());
-        assertTrue(req2.getPath().indexOf("/files/") > -1);
+        assertTrue(req2.getPath().contains("/files/"));
         assertTrue(req2.getHeader("Content-Type").startsWith("multipart"));
-        assertTrue(multipart.indexOf("filedata") > -1);
-        assertTrue(multipart.indexOf("octet-stream") > -1);
-
-        server.shutdown();
+        assertTrue(multipart.contains("filedata"));
+        assertTrue(multipart.contains("octet-stream"));
     }
 
-    @org.junit.Test
-    public void shuldUploadMultipleFilesOnSave() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 200, getResource("save-object-success.json"));
-        enqueue(3, server, 200, "");
+    @Test
+    public void saveMany() throws Exception {
+        enqueue(1, 200, getResource("save-object-success.json"));
+        enqueue(3, 200, "");
 
         String filename = "file-example-image.jpg";
         AxObject object = new AxObject(COLLECTION_2);
@@ -65,14 +61,11 @@ public class AxFileTest extends AxTest {
         assertEquals("PUT", req2.getMethod());
         assertEquals("PUT", req3.getMethod());
         assertEquals("PUT", req4.getMethod());
-
-        server.shutdown();
     }
 
-    @org.junit.Test
-    public void testFileUploadOnceSuccess() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(3, server, 200, getResource("save-object-success.json"));
+    @Test
+    public void uploadOnce() throws Exception {
+        enqueue(3, 200, getResource("save-object-success.json"));
 
         String filename = "file-example-image.jpg";
         AxObject object = new AxObject(COLLECTION_2);
@@ -83,13 +76,11 @@ public class AxFileTest extends AxTest {
         Ax.save(object);
 
         assertEquals(3, server.getRequestCount());
-        server.shutdown();
     }
 
-    @org.junit.Test
-    public void testFileGetSuccess() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 200, getResource("find-file-success.json"));
+    @Test
+    public void getFile() throws Exception {
+        enqueue(1, 200, getResource("find-file-success.json"));
 
         String name = "file-example-image.jpg";
         AxObject object = Ax.find(COLLECTION_1, "123");
@@ -105,7 +96,7 @@ public class AxFileTest extends AxTest {
         String act = file.getUrl();
         assertEquals(exp, act);
 
-        enqueue(1, server, 200, getResource("file-example-image.jpg"));
+        enqueue(1, 200, getResource("file-example-image.jpg"));
         file.load();
         assertNotNull(file.getData());
 
@@ -113,22 +104,18 @@ public class AxFileTest extends AxTest {
         assertEquals("GET", req.getMethod());
         assertEquals("http://" + req.getHeaders().get("Host"), server.getUrl("").toString());
         assertEquals(Ax.getAppKey(), req.getHeader("x-appstax-appkey"));
-
-        server.shutdown();
     }
 
-    @org.junit.Test(expected=AxException.class)
-    public void testFileGetError() throws Exception {
-        MockWebServer server = createMockWebServer();
-        enqueue(1, server, 200, getResource("find-file-success.json"));
-        enqueue(1, server, 400, getResource("find-object-error.json"));
+    @Test(expected=AxException.class)
+    public void getFileError() throws Exception {
+        enqueue(1, 200, getResource("find-file-success.json"));
+        enqueue(1, 400, getResource("find-object-error.json"));
 
         AxObject object = Ax.find(COLLECTION_1, "123");
         AxFile file = object.getFile("file");
         assertNull(file.getData());
 
         file.load();
-        server.shutdown();
     }
 
 }

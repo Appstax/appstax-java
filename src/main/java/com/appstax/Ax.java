@@ -6,13 +6,14 @@ public class Ax {
 
     private static String appKey = "";
     private static String apiUrl = "https://appstax.com/api/latest/";
+    private static String apiSocket = "ws://appstax.com/api/latest/";
     private static volatile AxUser currentUser = null;
 
     public static String getAppKey() {
         return appKey;
     }
 
-    public static void setAppKey(final String key) {
+    public static void setAppKey(String key) {
         appKey = key;
     }
 
@@ -20,8 +21,16 @@ public class Ax {
         return apiUrl;
     }
 
-    public static void setApiUrl(final String url) {
-        apiUrl = url.replaceAll("/$", "") + "/";
+    public static void setApiUrl(String url) {
+        apiUrl = parseUrl(url);
+    }
+
+    public static String getApiSocket() {
+        return apiSocket;
+    }
+
+    public static void setApiSocket(String url) {
+        apiSocket = parseUrl(url);
     }
 
     public static AxObject save(AxObject object) {
@@ -71,6 +80,10 @@ public class Ax {
         return AxQuery.filter(collection, properties);
     }
 
+    public static AxChannel channel(String name) {
+        return new AxChannel(name);
+    }
+
     public static AxUser getCurrentUser() {
         return Ax.currentUser;
     }
@@ -90,6 +103,10 @@ public class Ax {
             AxSession.logout(Ax.currentUser);
             Ax.currentUser = null;
         }
+    }
+
+    private static String parseUrl(String url) {
+        return url.replaceAll("/$", "") + "/";
     }
 
 }

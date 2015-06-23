@@ -21,7 +21,7 @@ public final class AxFile {
 
     protected AxFile(JSONObject meta) {
         this.name = meta.has(KEY_NAME) ? meta.getString(KEY_NAME) : null;
-        this.url = meta.has(KEY_URL) ? meta.getString(KEY_URL) : null;
+        this.url = meta.has(KEY_URL) ? Ax.getApiUrl() + meta.getString(KEY_URL) : null;
     }
 
     protected AxFile load() {
@@ -47,11 +47,7 @@ public final class AxFile {
     }
 
     public String getUrl() {
-        if (this.url == null) {
-            return null;
-        } else {
-            return Ax.getApiUrl() + this.url;
-        }
+        return this.url;
     }
 
 }

@@ -24,6 +24,10 @@ public final class AxException extends RuntimeException {
         this(message, null);
     }
 
+    public AxException(Throwable e) {
+        this(e.getMessage(), e);
+    }
+
     public int getStatus() {
         return status;
     }
