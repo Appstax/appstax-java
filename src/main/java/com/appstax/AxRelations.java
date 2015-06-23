@@ -157,9 +157,16 @@ final class AxRelations {
 
     private Map<String, List<AxObject>> parse(JSONObject properties) {
         Map<String, List<AxObject>> relations = new HashMap<>();
+        JSONArray names = properties.names();
+        List<String> keys = new ArrayList<String>();
 
-        List<String> keys = new ArrayList<>();
-        keys.addAll(properties.keySet());
+        if (names == null) {
+            return relations;
+        }
+
+        for(int i = 0; i < names.length(); i++) {
+            keys.add(names.getString(i));
+        }
 
         for (String key : keys) {
             JSONObject property = parseRelation(properties, key);
