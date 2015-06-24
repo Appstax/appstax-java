@@ -38,7 +38,6 @@ public abstract class AxTest {
         server.start();
 
         Ax.setApiUrl(server.getUrl("/").toString());
-        Ax.setApiSocket(server.getUrl("/").toString());
     }
 
     @After

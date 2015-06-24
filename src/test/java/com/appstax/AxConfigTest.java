@@ -20,4 +20,12 @@ public class AxConfigTest extends AxTest {
         assertEquals("2/", Ax.getApiUrl());
     }
 
+    @Test
+    public void socket() {
+        Ax.setApiUrl("https://appstax.com/api/latest/");
+        assertEquals("wss://appstax.com/api/latest/", Ax.getApiSocket());
+        Ax.setApiUrl("http://appstax.com/api/latest");
+        assertEquals("ws://appstax.com/api/latest/", Ax.getApiSocket());
+    }
+
 }

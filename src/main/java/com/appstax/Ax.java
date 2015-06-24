@@ -6,7 +6,6 @@ public class Ax {
 
     private static String appKey = "";
     private static String apiUrl = "https://appstax.com/api/latest/";
-    private static String apiSocket = "ws://appstax.com/api/latest/";
     private static volatile AxUser currentUser = null;
 
     public static String getAppKey() {
@@ -26,11 +25,7 @@ public class Ax {
     }
 
     public static String getApiSocket() {
-        return apiSocket;
-    }
-
-    public static void setApiSocket(String url) {
-        apiSocket = parseUrl(url);
+        return apiUrl.replaceFirst("^http", "ws");
     }
 
     public static AxObject save(AxObject object) {
