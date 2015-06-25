@@ -23,7 +23,7 @@ public final class AxChannel {
         this.listener = new AxListener() {};
         this.queue = new CopyOnWriteArrayList<>();
         this.name = name;
-        this.validateChannel();
+        this.validate();
         this.connect();
     }
 
@@ -52,8 +52,8 @@ public final class AxChannel {
 
     private void connect() {
         AxClient.socket(
-                AxPaths.realtime(getSessionId()),
-                new Dispatcher()
+            AxPaths.realtime(getSessionId()),
+            new Dispatcher()
         );
     }
 
@@ -67,7 +67,6 @@ public final class AxChannel {
     private void open(WebSocket socket) {
         queue.add(0, item("subscribe", ""));
         this.socket = socket;
-        flush();
     }
 
     private void close() {
@@ -110,7 +109,7 @@ public final class AxChannel {
         }
     }
 
-    private void validateChannel() {
+    private void validate() {
         if (!isPublic() && !isPrivate()) {
             throw new AxException("invalid name " + this.name);
         }
@@ -129,12 +128,16 @@ public final class AxChannel {
     }
 
     private AxEvent parse(BufferedSource source) {
+        JSONObject json = new JSONObject(read(source));
+        String message = json.getString("message");
+        return new AxEvent("message", name, message);
+    }
+
+    private String read(BufferedSource source) {
         try {
             String body = source.readUtf8();
             source.close();
-            JSONObject json = new JSONObject(body);
-            String message = json.getString("message");
-            return new AxEvent("message", name, message);
+            return body;
         } catch (IOException e) {
             throw new AxException(e);
         }
@@ -145,6 +148,7 @@ public final class AxChannel {
         @Override
         public void onOpen(WebSocket socket, Response response) {
             open(socket);
+            flush();
             listener.onOpen(new AxEvent("open", name, ""));
         }
 
@@ -156,6 +160,7 @@ public final class AxChannel {
         @Override
         public void onMessage(BufferedSource source, WebSocket.PayloadType payloadType) throws IOException {
             listener.onMessage(parse(source));
+            flush();
         }
 
         @Override
