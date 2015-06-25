@@ -189,6 +189,20 @@ public class AxObject {
         return this;
     }
 
+    protected String marshal() {
+        JSONObject json = new JSONObject();
+        json.put("collection", this.getCollection());
+        json.put("properties", this.properties);
+        return json.toString();
+    }
+
+    protected static AxObject unmarshal(String source) {
+        JSONObject json = new JSONObject(source);
+        JSONObject properties = json.getJSONObject("properties");
+        String collection = json.getString("collection");
+        return new AxObject(collection, properties);
+    }
+
     private void saveObject() {
         if (this.getId() == null) {
             this.createObject();

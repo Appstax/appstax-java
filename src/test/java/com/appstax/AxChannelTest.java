@@ -27,9 +27,7 @@ public class AxChannelTest extends AxTest {
     public void subscribe() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
         final AtomicReference<String> res = new AtomicReference<>();
-
-        server.enqueue(new MockResponse().setBody(getResource("user-session-success.json")));
-        server.enqueue(new MockResponse().withWebSocketUpgrade(new MessageRecorder(lock, res)));
+        socket(new RecordListener(lock, res));
 
         AxChannel channel = Ax.channel("public/chat");
         assertFalse(channel.isOpen());
@@ -44,45 +42,53 @@ public class AxChannelTest extends AxTest {
     }
 
     @Test
-    public void send() throws Exception {
-        final CountDownLatch lock = new CountDownLatch(2);
-        final AtomicReference<String> res = new AtomicReference<>();
-
-        server.enqueue(new MockResponse().setBody(getResource("user-session-success.json")));
-        server.enqueue(new MockResponse().withWebSocketUpgrade(new MessageRecorder(lock, res)));
-
-        AxChannel channel = Ax.channel("public/chat");
-        channel.send("123");
-        lock.await();
-
-        JSONObject msg = new JSONObject(res.get());
-        assertEquals("123", msg.getString("message"));
-    }
-
-    @Test
-    public void receive() throws Exception {
+    public void sendString() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
         final AtomicReference<AxEvent> res = new AtomicReference<>();
-
-        server.enqueue(new MockResponse().setBody(getResource("user-session-success.json")));
-        server.enqueue(new MockResponse().withWebSocketUpgrade(new MessageSender("321")));
+        socket(new EchoListener());
 
         Ax.channel("public/chat").listen(new AxListener() {
             void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
             }
-        });
+        }).send("123");
 
         lock.await();
-        assertNotNull(res.get());
-        assertEquals("321", res.get().getPayload());
+        assertEquals("123", res.get().getString());
+    }
+
+    @Test
+    public void sendObject() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<AxEvent> res = new AtomicReference<>();
+        socket(new EchoListener());
+
+        AxObject object = new AxObject(COLLECTION_1);
+        object.put("foo", "bar");
+
+        Ax.channel("public/chat").listen(new AxListener() {
+            void onMessage(AxEvent event) {
+                res.set(event);
+                lock.countDown();
+            }
+        }).send(object);
+
+        lock.await();
+        AxObject result = res.get().getObject();
+        assertEquals(COLLECTION_1, result.getCollection());
+        assertEquals("bar", result.getString("foo"));
+    }
+
+    private void socket(WebSocketListener listener) throws IOException {
+        server.enqueue(new MockResponse().setBody(getResource("user-session-success.json")));
+        server.enqueue(new MockResponse().withWebSocketUpgrade(listener));
     }
 
     protected static class EmptyListener implements WebSocketListener {
 
         @Override
-        public void onMessage(BufferedSource payload, WebSocket.PayloadType type) throws IOException {}
+        public void onMessage(BufferedSource source, WebSocket.PayloadType type) throws IOException {}
 
         @Override
         public void onOpen(WebSocket socket, Response response) {}
@@ -98,40 +104,48 @@ public class AxChannelTest extends AxTest {
 
     }
 
-    protected static class MessageRecorder extends EmptyListener {
+    protected static class RecordListener extends EmptyListener {
 
         final CountDownLatch lock;
         final AtomicReference<String> res;
 
-        public MessageRecorder(CountDownLatch lock, AtomicReference<String> res) {
+        public RecordListener(CountDownLatch lock, AtomicReference<String> res) {
             super();
             this.lock = lock;
             this.res = res;
         }
 
         @Override
-        public void onMessage(BufferedSource payload, WebSocket.PayloadType type) throws IOException {
-            res.set(payload.readUtf8());
+        public void onMessage(BufferedSource source, WebSocket.PayloadType type) throws IOException {
+            res.set(source.readUtf8());
             lock.countDown();
-            payload.close();
+            source.close();
         }
 
     }
 
-    protected static class MessageSender extends EmptyListener {
+    protected static class EchoListener extends EmptyListener {
 
-        final String msg;
-
-        public MessageSender(String msg) {
-            super();
-            this.msg = msg;
-        }
+        private WebSocket socket;
 
         @Override
         public void onOpen(final WebSocket socket, final Response response) {
-            new Thread() {
+            this.socket = socket;
+        }
 
-                @Override
+        @Override
+        public void onMessage(final BufferedSource source, WebSocket.PayloadType type) throws IOException {
+            String msg = source.readUtf8();
+            source.close();
+            if (isMessage(msg)) send(msg);
+        }
+
+        private boolean isMessage(String msg) {
+            return new JSONObject(msg).has("message");
+        }
+
+        private void send(final String msg) {
+            new Thread() {
                 public void run() {
                     try {
                         socket.sendMessage(TEXT, new Buffer().writeUtf8(msg));
@@ -139,7 +153,6 @@ public class AxChannelTest extends AxTest {
                         throw new AssertionError(e);
                     }
                 }
-
             }.start();
         }
 

@@ -8,9 +8,9 @@ import okio.BufferedSource;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class AxChannel {
 
@@ -21,18 +21,29 @@ public final class AxChannel {
 
     protected AxChannel(String name) {
         this.listener = new AxListener() {};
-        this.queue = new ArrayList<>();
+        this.queue = new CopyOnWriteArrayList<>();
         this.name = name;
         this.validateChannel();
         this.connect();
     }
 
-    public void listen(AxListener listener) {
+    public AxChannel listen(AxListener listener) {
         this.listener = listener;
+        return this;
     }
 
-    public void send(String message) {
+    public AxChannel send(AxObject object) {
+        return send(object.marshal());
+    }
+
+    public AxChannel send(JSONObject object) {
+        return send(object.toString());
+    }
+
+    public AxChannel send(String message) {
         queue.add(item("publish", message));
+        flush();
+        return this;
     }
 
     public boolean isOpen() {
@@ -65,7 +76,6 @@ public final class AxChannel {
 
     private JSONObject item(String command, String message) {
         JSONObject item = new JSONObject();
-
         item.put("id", messageId());
         item.put("channel", this.name);
 
@@ -118,12 +128,13 @@ public final class AxChannel {
         return UUID.randomUUID().toString();
     }
 
-    private AxEvent parse(BufferedSource bufferedSource) {
+    private AxEvent parse(BufferedSource source) {
         try {
-            String body = bufferedSource.readUtf8();
-            AxEvent event = new AxEvent("message", name, body);
-            bufferedSource.close();
-            return event;
+            String body = source.readUtf8();
+            source.close();
+            JSONObject json = new JSONObject(body);
+            String message = json.getString("message");
+            return new AxEvent("message", name, message);
         } catch (IOException e) {
             throw new AxException(e);
         }
@@ -143,8 +154,8 @@ public final class AxChannel {
         }
 
         @Override
-        public void onMessage(BufferedSource bufferedSource, WebSocket.PayloadType payloadType) throws IOException {
-            listener.onMessage(parse(bufferedSource));
+        public void onMessage(BufferedSource source, WebSocket.PayloadType payloadType) throws IOException {
+            listener.onMessage(parse(source));
         }
 
         @Override
