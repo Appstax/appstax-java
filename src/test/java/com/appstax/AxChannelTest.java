@@ -48,7 +48,7 @@ public class AxChannelTest extends AxTest {
         socket(new EchoListener());
 
         Ax.channel("public/chat").listen(new AxListener() {
-            void onMessage(AxEvent event) {
+            public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
             }
@@ -68,7 +68,7 @@ public class AxChannelTest extends AxTest {
         object.put("foo", "bar");
 
         Ax.channel("public/chat").listen(new AxListener() {
-            void onMessage(AxEvent event) {
+            public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
             }

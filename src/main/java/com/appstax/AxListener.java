@@ -1,8 +1,8 @@
 package com.appstax;
 
 public abstract class AxListener {
-    void onOpen(AxEvent event) {};
-    void onClose(AxEvent event) {};
-    void onMessage(AxEvent event) {};
-    void onFailure(AxEvent event) {};
+    public void onOpen(AxEvent event) {};
+    public void onClose(AxEvent event) {};
+    public void onMessage(AxEvent event) {};
+    public void onFailure(AxEvent event) {};
 }
