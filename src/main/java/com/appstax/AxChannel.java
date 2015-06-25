@@ -5,6 +5,7 @@ import com.squareup.okhttp.ws.WebSocket;
 import com.squareup.okhttp.ws.WebSocketListener;
 import okio.Buffer;
 import okio.BufferedSource;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -128,9 +129,14 @@ public final class AxChannel {
     }
 
     private AxEvent parse(BufferedSource source) {
-        JSONObject json = new JSONObject(read(source));
-        String message = json.getString("message");
-        return new AxEvent("message", name, message);
+        String msg = read(source);
+
+        try {
+            JSONObject json = new JSONObject(msg);
+            msg = json.getString("message");
+        } catch (JSONException e) {}
+
+        return new AxEvent("message", name, msg);
     }
 
     private String read(BufferedSource source) {
