@@ -4,10 +4,6 @@ import org.json.JSONObject;
 
 public final class AxFile {
 
-    private static final String KEY_NAME = "filename";
-    private static final String KEY_DATA = "filedata";
-    private static final String KEY_URL = "url";
-
     private String name;
     private byte[] data;
     private String url;
@@ -20,8 +16,8 @@ public final class AxFile {
     }
 
     protected AxFile(JSONObject meta) {
-        this.name = meta.has(KEY_NAME) ? meta.getString(KEY_NAME) : null;
-        this.url = meta.has(KEY_URL) ? Ax.getApiUrl() + meta.getString(KEY_URL) : null;
+        this.name = meta.has("filename") ? meta.getString("filename") : null;
+        this.url = meta.has("url") ? Ax.getApiUrl() + meta.getString("url") : null;
     }
 
     protected AxFile load() {
@@ -31,7 +27,7 @@ public final class AxFile {
 
     protected AxFile save(String path) {
         if (!this.saved) {
-            AxClient.multipart(AxClient.Method.PUT, path, KEY_DATA, getName(), getData());
+            AxClient.multipart(AxClient.Method.PUT, path, "filedata", getName(), getData());
             this.saved = true;
             this.url = path;
         }

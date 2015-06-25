@@ -9,9 +9,6 @@ import java.util.Map;
 
 final class AxQuery {
 
-    private static final String KEY_OBJECTS = "objects";
-    private static final String OPERATOR = " and ";
-
     protected static List<AxObject> find(String collection, int depth) {
         String path = AxPaths.collection(collection, depth);
         return objects(collection, AxClient.request(AxClient.Method.GET, path));
@@ -32,19 +29,19 @@ final class AxQuery {
         StringBuilder b = new StringBuilder();
 
         for (Map.Entry<String, String> entry : properties.entrySet()) {
-            b.append(OPERATOR);
+            b.append(" and ");
             b.append(entry.getKey());
             b.append("='");
             b.append(entry.getValue());
             b.append("'");
         }
 
-        return filter(collection, b.toString().replaceFirst(OPERATOR, ""));
+        return filter(collection, b.toString().replaceFirst(" and ", ""));
     }
 
     private static List<AxObject> objects(String collection, JSONObject json) {
         ArrayList<AxObject> objects = new ArrayList<AxObject>();
-        JSONArray array = json.getJSONArray(KEY_OBJECTS);
+        JSONArray array = json.getJSONArray("objects");
 
         for(int i = 0; i < array.length(); i++) {
             objects.add(new AxObject(collection, array.getJSONObject(i)));

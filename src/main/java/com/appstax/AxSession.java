@@ -4,12 +4,6 @@ import org.json.JSONObject;
 
 final class AxSession {
 
-    private static final String KEY_SESSIONID = "sysSessionId";
-    private static final String KEY_USERNAME = "sysUsername";
-    private static final String KEY_PASSWORD = "sysPassword";
-    private static final String KEY_OBJECT = "user";
-    private static final String USERS = "users";
-
     protected static AxUser signup(String username, String password) {
         return request(AxPaths.users(), username, password);
     }
@@ -25,11 +19,11 @@ final class AxSession {
 
     private static AxUser request(String path, String username, String password) {
         JSONObject req = new JSONObject();
-        req.put(KEY_USERNAME, username);
-        req.put(KEY_PASSWORD, password);
+        req.put("sysUsername", username);
+        req.put("sysPassword", password);
 
         JSONObject res = AxClient.request(AxClient.Method.POST, path, req);
-        return new AxUser(username, res.getString(KEY_SESSIONID), res.getJSONObject(KEY_OBJECT));
+        return new AxUser(username, res.getString("sysSessionId"), res.getJSONObject("user"));
     }
 
 }

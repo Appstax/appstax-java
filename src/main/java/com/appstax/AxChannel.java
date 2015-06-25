@@ -14,17 +14,6 @@ import java.util.UUID;
 
 public final class AxChannel {
 
-    private static final String KEY_SESSION = "realtimeSessionId";
-    private static final String KEY_MESSAGE_ID = "id";
-    private static final String KEY_COMMAND = "command";
-    private static final String KEY_CHANNEL = "channel";
-    private static final String KEY_MESSAGE = "message";
-
-    private static final String CMD_PUBLISH = "publish";
-    private static final String CMD_SUBSCRIBE = "subscribe";
-    private static final String PREFIX_PUBLIC = "public/";
-    private static final String PREFIX_PRIVATE = "private/";
-
     private String name;
     private WebSocket socket;
     private List<JSONObject> queue;
@@ -43,7 +32,7 @@ public final class AxChannel {
     }
 
     public void send(String message) {
-        queue.add(item(CMD_PUBLISH, message));
+        queue.add(item("publish", message));
     }
 
     public boolean isOpen() {
@@ -52,8 +41,8 @@ public final class AxChannel {
 
     private void connect() {
         AxClient.socket(
-            AxPaths.realtime(getSessionId()),
-            new Dispatcher()
+                AxPaths.realtime(getSessionId()),
+                new Dispatcher()
         );
     }
 
@@ -61,11 +50,13 @@ public final class AxChannel {
         return AxClient.request(
             AxClient.Method.POST,
             AxPaths.realtimeSessions()
-        ).getString(KEY_SESSION);
+        ).getString("realtimeSessionId");
     }
 
     private void open(WebSocket socket) {
+        queue.add(0, item("subscribe", ""));
         this.socket = socket;
+        flush();
     }
 
     private void close() {
@@ -75,15 +66,15 @@ public final class AxChannel {
     private JSONObject item(String command, String message) {
         JSONObject item = new JSONObject();
 
-        item.put(KEY_MESSAGE_ID, messageId());
-        item.put(KEY_CHANNEL, this.name);
+        item.put("id", messageId());
+        item.put("channel", this.name);
 
         if (!command.isEmpty()) {
-            item.put(KEY_COMMAND, command);
+            item.put("command", command);
         }
 
         if (!message.isEmpty()) {
-            item.put(KEY_MESSAGE, message);
+            item.put("message", message);
         }
 
         return item;
@@ -116,24 +107,33 @@ public final class AxChannel {
     }
 
     private boolean isPublic() {
-        return this.name.startsWith(PREFIX_PUBLIC);
+        return this.name.startsWith("public/");
     }
 
     private boolean isPrivate() {
-        return this.name.startsWith(PREFIX_PRIVATE);
+        return this.name.startsWith("private/");
     }
 
     private String messageId() {
         return UUID.randomUUID().toString();
     }
 
+    private AxEvent parse(BufferedSource bufferedSource) {
+        try {
+            String body = bufferedSource.readUtf8();
+            AxEvent event = new AxEvent("message", name, body);
+            bufferedSource.close();
+            return event;
+        } catch (IOException e) {
+            throw new AxException(e);
+        }
+    }
+
     private class Dispatcher implements WebSocketListener {
 
         @Override
         public void onOpen(WebSocket socket, Response response) {
-            queue.add(0, item(CMD_SUBSCRIBE, ""));
             open(socket);
-            flush();
             listener.onOpen(new AxEvent("open", name, ""));
         }
 
@@ -144,12 +144,7 @@ public final class AxChannel {
 
         @Override
         public void onMessage(BufferedSource bufferedSource, WebSocket.PayloadType payloadType) throws IOException {
-            if (payloadType == WebSocket.PayloadType.TEXT) {
-                String body = bufferedSource.readUtf8();
-                AxEvent event = new AxEvent("message", name, body);
-                listener.onMessage(event);
-                bufferedSource.close();
-            }
+            listener.onMessage(parse(bufferedSource));
         }
 
         @Override

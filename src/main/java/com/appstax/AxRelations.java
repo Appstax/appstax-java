@@ -7,18 +7,6 @@ import java.util.*;
 
 final class AxRelations {
 
-    private static final String KEY_ADDITIONS = "additions";
-    private static final String KEY_REMOVALS = "removals";
-
-    private static final String KEY_COLLECTION = "sysCollection";
-    private static final String KEY_OBJECTS = "sysObjects";
-    private static final String KEY_RELATIONS = "sysDatatype";
-
-    private static final String VAL_RELATIONS = "relation";
-    private static final String KEY_CHANGES = "sysRelationChanges";
-    private static final String UNSAVED_ERR = "Can not relate to an unsaved object.";
-    private static final String UNKNOWN_ERR = "Unknown relation: ";
-
     private Map<String, List<AxObject>> relations;
     private Map<String, List<AxObject>> additions;
     private Map<String, List<AxObject>> removals;
@@ -76,7 +64,7 @@ final class AxRelations {
     protected void removeChanges(AxObject object) {
         for (String key : keys()) {
             JSONObject relation = (JSONObject) object.get(key);
-            relation.remove(KEY_CHANGES);
+            relation.remove("sysRelationChanges");
         }
         this.additions = new HashMap<>();
         this.removals = new HashMap<>();
@@ -102,7 +90,7 @@ final class AxRelations {
     private List<AxObject> verify(AxObject... objects) {
         for (AxObject object : objects) {
             if (object.getId() == null) {
-                throw new AxException(UNSAVED_ERR);
+                throw new AxException("Can not relate to an unsaved object.");
             }
         }
         return Arrays.asList(objects);
@@ -118,7 +106,7 @@ final class AxRelations {
 
     private void remove(String relation, Map<String, List<AxObject>> relations, List<AxObject> objects) {
         if (!relations.containsKey(relation)) {
-            throw new AxException(UNKNOWN_ERR + relation);
+            throw new AxException("Unknown relation: " + relation);
         }
         for (AxObject object : objects) {
             for (AxObject existing : relations.get(relation)) {
@@ -133,15 +121,15 @@ final class AxRelations {
         JSONObject changes = new JSONObject();
 
         if (additions != null && !additions.isEmpty()) {
-            changes.put(KEY_ADDITIONS, toJSONArray(additions));
+            changes.put("additions", toJSONArray(additions));
         }
 
         if (removals != null && !removals.isEmpty()) {
-            changes.put(KEY_REMOVALS, toJSONArray(removals));
+            changes.put("removals", toJSONArray(removals));
         }
 
         JSONObject value = new JSONObject();
-        value.put(KEY_CHANGES, changes);
+        value.put("sysRelationChanges", changes);
         return value;
     }
 
@@ -175,8 +163,8 @@ final class AxRelations {
                 continue;
             }
 
-            JSONArray items = property.getJSONArray(KEY_OBJECTS);
-            String collection = property.getString(KEY_COLLECTION);
+            JSONArray items = property.getJSONArray("sysObjects");
+            String collection = property.getString("sysCollection");
             properties.remove(key);
 
             if (items.get(0) instanceof JSONObject) {
@@ -198,7 +186,7 @@ final class AxRelations {
 
         JSONObject prop = (JSONObject) properties.get(key);
 
-        if (!prop.has(KEY_RELATIONS) || !prop.getString(KEY_RELATIONS).equals(VAL_RELATIONS)) {
+        if (!prop.has("sysDatatype") || !prop.getString("sysDatatype").equals("relation")) {
             return null;
         }
 
