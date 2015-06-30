@@ -5,7 +5,6 @@ import com.squareup.okhttp.ws.WebSocket;
 import com.squareup.okhttp.ws.WebSocketListener;
 import okio.Buffer;
 import okio.BufferedSource;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -15,22 +14,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class AxChannel {
 
-    private String name;
     private WebSocket socket;
     private List<JSONObject> queue;
     private AxListener listener;
+    private String name;
 
-    protected AxChannel(String name) {
-        this.listener = new AxListener() {};
+    protected AxChannel(String name, AxListener listener) {
         this.queue = new CopyOnWriteArrayList<>();
+        this.listener = listener;
         this.name = name;
+
+        if (this.listener == null) {
+            this.listener = new AxListener() {};
+        }
+
         this.validate();
         this.connect();
-    }
-
-    public AxChannel listen(AxListener listener) {
-        this.listener = listener;
-        return this;
     }
 
     public AxChannel send(AxObject object) {
@@ -52,17 +51,34 @@ public final class AxChannel {
     }
 
     private void connect() {
-        AxClient.socket(
-            AxPaths.realtime(getSessionId()),
-            new Dispatcher()
-        );
+        new Thread() {
+            public void run() {
+                getSocket();
+            }
+        }.start();
+    }
+
+    private void getSocket() {
+        String id = getSessionId();
+
+        if (id != null) {
+            AxClient.socket(
+                AxPaths.realtime(id),
+                new Dispatcher()
+            );
+        }
     }
 
     private String getSessionId() {
-        return AxClient.request(
-            AxClient.Method.POST,
-            AxPaths.realtimeSessions()
-        ).getString("realtimeSessionId");
+        try {
+            return AxClient.request(
+                AxClient.Method.POST,
+                AxPaths.realtimeSessions()
+            ).getString("realtimeSessionId");
+        } catch (Exception e) {
+            listener.onError(e);
+            return null;
+        }
     }
 
     private void open(WebSocket socket) {
@@ -99,6 +115,17 @@ public final class AxChannel {
         }
     }
 
+    private JSONObject read(BufferedSource source) {
+        try {
+            String body = source.readUtf8();
+            source.close();
+            return new JSONObject(body);
+        } catch (IOException e) {
+            listener.onError(e);
+            return null;
+        }
+    }
+
     private void write(JSONObject item) {
         try {
             this.socket.sendMessage(
@@ -106,7 +133,7 @@ public final class AxChannel {
                 new Buffer().writeUtf8(item.toString())
             );
         } catch (IOException e) {
-            throw new AxException(e);
+            listener.onError(e);
         }
     }
 
@@ -128,44 +155,31 @@ public final class AxChannel {
         return UUID.randomUUID().toString();
     }
 
-    private AxEvent parse(BufferedSource source) {
-        String msg = read(source);
-
-        try {
-            JSONObject json = new JSONObject(msg);
-            msg = json.getString("message");
-        } catch (JSONException e) {}
-
-        return new AxEvent("message", name, msg);
-    }
-
-    private String read(BufferedSource source) {
-        try {
-            String body = source.readUtf8();
-            source.close();
-            return body;
-        } catch (IOException e) {
-            throw new AxException(e);
-        }
-    }
-
     private class Dispatcher implements WebSocketListener {
 
         @Override
         public void onOpen(WebSocket socket, Response response) {
             open(socket);
             flush();
-            listener.onOpen(new AxEvent("open", name, ""));
+            listener.onOpen();
         }
 
         @Override
         public void onFailure(IOException e, Response response) {
-            listener.onFailure(new AxEvent("failure", name, e.getMessage()));
+            listener.onClose();
         }
 
         @Override
         public void onMessage(BufferedSource source, WebSocket.PayloadType payloadType) throws IOException {
-            listener.onMessage(parse(source));
+            try {
+                AxEvent event = new AxEvent(name, read(source));
+                switch (event.getType()) {
+                    case "message": listener.onMessage(event); break;
+                    case "error":   listener.onError(new AxException(event.getString())); break;
+                }
+            } catch (Exception e) {
+                listener.onError(e);
+            }
             flush();
         }
 
@@ -177,7 +191,7 @@ public final class AxChannel {
         @Override
         public void onClose(int i, String s) {
             close();
-            listener.onClose(new AxEvent("close", name, s));
+            listener.onClose();
         }
 
     }

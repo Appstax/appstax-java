@@ -20,16 +20,16 @@ public class AxChannelTest extends AxTest {
 
     @Test(expected=AxException.class)
     public void name() {
-        Ax.channel("foo");
+        Ax.channel("foo", null);
     }
 
     @Test
     public void subscribe() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
         final AtomicReference<String> res = new AtomicReference<>();
-        socket(new RecordListener(lock, res));
+        socket(new Recorder(lock, res));
 
-        AxChannel channel = Ax.channel("public/chat");
+        AxChannel channel = Ax.channel("public/chat", null);
         assertFalse(channel.isOpen());
         lock.await();
         assertTrue(channel.isOpen());
@@ -45,29 +45,30 @@ public class AxChannelTest extends AxTest {
     public void sendString() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
         final AtomicReference<AxEvent> res = new AtomicReference<>();
-        socket(new EchoListener());
+        socket(new Sender(getResource("channel-message-string.json")));
 
-        Ax.channel("public/chat").listen(new AxListener() {
+        Ax.channel("public/chat", new AxListener() {
             public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
             }
-        }).send("123");
+        }).send("321");
 
         lock.await();
-        assertEquals("123", res.get().getString());
+        assertEquals("321", res.get().getString());
+        assertEquals("message", res.get().getType());
     }
 
     @Test
     public void sendObject() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
         final AtomicReference<AxEvent> res = new AtomicReference<>();
-        socket(new EchoListener());
+        socket(new Sender(getResource("channel-message-object.json")));
 
         AxObject object = new AxObject(COLLECTION_1);
         object.put("foo", "bar");
 
-        Ax.channel("public/chat").listen(new AxListener() {
+        Ax.channel("public/chat", new AxListener() {
             public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
@@ -104,12 +105,12 @@ public class AxChannelTest extends AxTest {
 
     }
 
-    protected static class RecordListener extends EmptyListener {
+    protected static class Recorder extends EmptyListener {
 
         final CountDownLatch lock;
         final AtomicReference<String> res;
 
-        public RecordListener(CountDownLatch lock, AtomicReference<String> res) {
+        public Recorder(CountDownLatch lock, AtomicReference<String> res) {
             super();
             this.lock = lock;
             this.res = res;
@@ -124,36 +125,32 @@ public class AxChannelTest extends AxTest {
 
     }
 
-    protected static class EchoListener extends EmptyListener {
+    protected static class Sender extends EmptyListener {
 
-        private WebSocket socket;
+        final String payload;
+
+        public Sender(String payload) {
+            this.payload = payload;
+        }
+
+        @Override
+        public void onMessage(BufferedSource source, WebSocket.PayloadType type) throws IOException {
+            source.close();
+        }
 
         @Override
         public void onOpen(final WebSocket socket, final Response response) {
-            this.socket = socket;
-        }
-
-        @Override
-        public void onMessage(final BufferedSource source, WebSocket.PayloadType type) throws IOException {
-            String msg = source.readUtf8();
-            source.close();
-            if (isMessage(msg)) send(msg);
-        }
-
-        private boolean isMessage(String msg) {
-            return new JSONObject(msg).has("message");
-        }
-
-        private void send(final String msg) {
             new Thread() {
                 public void run() {
                     try {
-                        socket.sendMessage(TEXT, new Buffer().writeUtf8(msg));
-                    } catch (IOException e) {
+                        Thread.sleep(100);
+                        socket.sendMessage(TEXT, new Buffer().writeUtf8(payload));
+                    } catch (IOException | InterruptedException e) {
                         throw new AssertionError(e);
                     }
                 }
             }.start();
+
         }
 
     }

@@ -4,46 +4,32 @@ import org.json.JSONObject;
 
 public class AxEvent {
 
-    private String type;
     private String channel;
-    private String message;
+    private JSONObject payload;
 
-    public AxEvent(String type, String channel, String message) {
-        this.setType(type);
-        this.setChannel(channel);
-        this.setMessage(message);
+    public AxEvent(String channel, JSONObject payload) {
+        this.channel = channel;
+        this.payload = payload;
     }
 
     public String getType() {
-        return type;
-    }
-
-    public void setType(String event) {
-        this.type = event;
+        return payload.getString("event");
     }
 
     public String getString() {
-        return message;
+        return payload.getString("message");
     }
 
     public JSONObject getJSON() {
-        return new JSONObject(getString());
+        return payload.getJSONObject("message");
     }
 
     public AxObject getObject() {
         return AxObject.unmarshal(getString());
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public String getChannel() {
         return channel;
-    }
-
-    public void setChannel(String channel) {
-        this.channel = channel;
     }
 
 }

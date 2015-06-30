@@ -75,8 +75,8 @@ public class Ax {
         return AxQuery.filter(collection, properties);
     }
 
-    public static AxChannel channel(String name) {
-        return new AxChannel(name);
+    public static AxChannel channel(String name, AxListener listener) {
+        return new AxChannel(name, listener);
     }
 
     public static AxUser getCurrentUser() {
