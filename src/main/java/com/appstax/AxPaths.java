@@ -6,19 +6,19 @@ import java.net.URLEncoder;
 final class AxPaths {
 
     protected static String users() {
-        return url("users");
+        return "users";
     }
 
     protected static String sessions() {
-        return url("sessions");
+        return "sessions";
     }
 
     protected static String session(String sessionId) {
-        return url("sessions/" + sessionId);
+        return "sessions/" + sessionId;
     }
 
     protected static String collection(String col) {
-        return url("objects/" + col);
+        return "objects/" + col;
     }
 
     protected static String collection(String col, int depth) {
@@ -34,11 +34,11 @@ final class AxPaths {
     }
 
     protected static String permissions() {
-        return url("permissions");
+        return "permissions";
     }
 
     protected static String file(String col, String id, String key, String filename) {
-        return url("files/" + col + "/" + id + "/" + key + "/" + filename);
+        return "files/" + col + "/" + id + "/" + key + "/" + filename;
     }
 
     protected static String filter(String col, String filter) {
@@ -46,23 +46,15 @@ final class AxPaths {
     }
 
     protected static String realtimeSessions() {
-        return url("messaging/realtime/sessions");
+        return "messaging/realtime/sessions";
     }
 
     protected static String realtime(String realtimeSessionId) {
-        return socket("messaging/realtime?rsession=" + realtimeSessionId);
+        return "messaging/realtime?rsession=" + realtimeSessionId;
     }
 
     private static String expand(String path, int depth) {
         return depth == 0 ? path : path + "?expanddepth=" + depth;
-    }
-
-    private static String url(String path) {
-        return Ax.getApiUrl() + path;
-    }
-
-    private static String socket(String path) {
-        return Ax.getApiSocket() + path;
     }
 
     protected static String encode(String component) {

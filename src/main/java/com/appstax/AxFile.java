@@ -4,30 +4,35 @@ import org.json.JSONObject;
 
 public final class AxFile {
 
+    private AxClient client;
     private String name;
     private byte[] data;
     private String url;
     private boolean saved;
 
-    public AxFile(String name, byte[] data) {
+    protected AxFile(AxClient client, String name, byte[] data) {
+        this.client = client;
         this.saved = false;
         this.name = name;
         this.data = data;
     }
 
-    protected AxFile(JSONObject meta) {
-        this.name = meta.has("filename") ? meta.getString("filename") : null;
-        this.url = meta.has("url") ? Ax.getApiUrl() + meta.getString("url") : null;
+    protected AxFile(AxClient client, JSONObject meta) {
+        this(client, meta.getString("filename"), null);
+
+        if (meta.has("url")) {
+            this.url = client.getUrl() + meta.getString("url");
+        }
     }
 
     protected AxFile load() {
-        this.data = AxClient.file(AxClient.Method.GET, this.url);
+        this.data = client.file(AxClient.Method.GET, this.url);
         return this;
     }
 
     protected AxFile save(String path) {
         if (!this.saved) {
-            AxClient.multipart(AxClient.Method.PUT, path, "filedata", getName(), getData());
+            client.multipart(AxClient.Method.PUT, path, "filedata", getName(), getData());
             this.saved = true;
             this.url = path;
         }
@@ -43,7 +48,13 @@ public final class AxFile {
     }
 
     public String getUrl() {
-        return this.url;
+        if (url == null) {
+            return null;
+        }
+        if (url.startsWith("http")) {
+            return url;
+        }
+        return client.getUrl() + url;
     }
 
 }

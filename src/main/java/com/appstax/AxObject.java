@@ -20,20 +20,23 @@ public class AxObject {
     protected static final String KEY_FILE = "filename";
 
     private String collection;
+    private AxClient client;
     private AxRelations relations;
     private AxPermissions permissions;
     private JSONObject properties;
     private Map<String, AxFile> files;
 
-    public AxObject(String collection) {
-        this(collection, new JSONObject());
+    protected AxObject(AxClient client, String collection) {
+        this(client, collection, new JSONObject());
     }
 
-    public AxObject(String collection, JSONObject properties) {
+    protected AxObject(AxClient client, String collection, JSONObject properties) {
+        this.client = client;
         this.collection = collection;
         this.properties = properties;
-        this.relations = new AxRelations(this.properties);
-        this.permissions = new AxPermissions();
+
+        this.relations = new AxRelations(client, this.properties);
+        this.permissions = new AxPermissions(client);
         this.files = new HashMap<>();
     }
 
@@ -179,13 +182,13 @@ public class AxObject {
 
     protected AxObject remove() {
         String path = AxPaths.object(this.getCollection(), this.getId());
-        this.properties = AxClient.request(AxClient.Method.DELETE, path);
+        this.properties = client.request(AxClient.Method.DELETE, path);
         return this;
     }
 
     protected AxObject refresh() {
         String path = AxPaths.object(this.getCollection(), this.getId());
-        this.properties = AxClient.request(AxClient.Method.GET, path);
+        this.properties = client.request(AxClient.Method.GET, path);
         return this;
     }
 
@@ -196,11 +199,11 @@ public class AxObject {
         return json.toString();
     }
 
-    protected static AxObject unmarshal(String source) {
+    protected static AxObject unmarshal(AxClient client, String source) {
         JSONObject json = new JSONObject(source);
         JSONObject properties = json.getJSONObject("properties");
         String collection = json.getString("collection");
-        return new AxObject(collection, properties);
+        return new AxObject(client, collection, properties);
     }
 
     private void saveObject() {
@@ -213,7 +216,7 @@ public class AxObject {
 
     private AxObject createObject() {
         String path = AxPaths.collection(this.getCollection());
-        JSONObject meta = AxClient.request(AxClient.Method.POST, path, this.properties);
+        JSONObject meta = client.request(AxClient.Method.POST, path, this.properties);
         this.put(KEY_CREATED, meta.get(KEY_CREATED));
         this.put(KEY_UPDATED, meta.get(KEY_UPDATED));
         this.put(KEY_ID, meta.get(KEY_ID));
@@ -222,7 +225,7 @@ public class AxObject {
 
     private AxObject updateObject() {
         String path = AxPaths.object(this.getCollection(), this.getId());
-        JSONObject meta = AxClient.request(AxClient.Method.PUT, path, this.properties);
+        JSONObject meta = client.request(AxClient.Method.PUT, path, this.properties);
         this.put(KEY_UPDATED, meta.get(KEY_UPDATED));
         return this;
     }
@@ -239,7 +242,7 @@ public class AxObject {
     private AxFile fileFromProperty(String key) {
         JSONObject meta = this.properties.getJSONObject(key);
         if (!meta.getString(KEY_TYPE).equals(TYPE_FILE)) return null;
-        return new AxFile(meta);
+        return new AxFile(client, meta);
     }
 
 }

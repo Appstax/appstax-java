@@ -4,10 +4,12 @@ import org.json.JSONObject;
 
 public class AxEvent {
 
+    private AxClient client;
     private String channel;
     private JSONObject payload;
 
-    public AxEvent(String channel, JSONObject payload) {
+    protected AxEvent(AxClient client, String channel, JSONObject payload) {
+        this.client = client;
         this.channel = channel;
         this.payload = payload;
     }
@@ -25,7 +27,7 @@ public class AxEvent {
     }
 
     public AxObject getObject() {
-        return AxObject.unmarshal(getString());
+        return AxObject.unmarshal(client, getString());
     }
 
     public String getChannel() {

@@ -27,7 +27,7 @@ public class AxDateTest extends AxTest {
         String dateString1 = "1980 20/10 @ 12:13";
         String dateString2 = "2022 30/12 @ 01:02";
 
-        AxObject object = new AxObject(COLLECTION_1);
+        AxObject object = ax.object(COLLECTION_1);
         DateFormat source = new SimpleDateFormat(format);
         object.put("date1", source.parse(dateString1));
         object.put("date2", source.parse(dateString2));

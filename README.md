@@ -1,4 +1,4 @@
-# Appstax Java SDK 
+# Appstax Java SDK
 
 [![Build Status](https://travis-ci.org/Appstax/appstax-java.svg?branch=master)](https://travis-ci.org/Appstax/appstax-java)
 [![Download](https://api.bintray.com/packages/appstax/maven/appstax-java/images/download.svg) ](https://bintray.com/appstax/maven/appstax-java/_latestVersion)
@@ -10,13 +10,13 @@ It's a work in progress, and not ready for use quite yet.
 ## Usage example
 
 ```java
-Ax.setAppKey("YourAppKey");
+Ax ax = new Ax("key");
 
-AxObject object = new AxObject("Contacts");
+AxObject object = ax.object("contacts");
 object.put("name", "Foo McBar");
 object.put("email", "foo@example.com");
 
-Ax.save(object);
+ax.save(object);
 ```
 
 ## License

@@ -13,7 +13,7 @@ public class AxRelationsTest extends AxTest {
     @Test
     public void parseUnexpanded() throws Exception {
         enqueue(1, 200, getResource("relation-unexpanded-success.json"));
-        AxObject object = Ax.find(COLLECTION_1, "123");
+        AxObject object = ax.find(COLLECTION_1, "123");
 
         List<String> expected = new ArrayList<>();
         List<String> actual = object.getStrings("messages");
@@ -28,7 +28,7 @@ public class AxRelationsTest extends AxTest {
     @Test
     public void parseExpanded() throws Exception {
         enqueue(1, 200, getResource("relation-expanded-one-success.json"));
-        AxObject object = Ax.find(COLLECTION_1, "123", 10);
+        AxObject object = ax.find(COLLECTION_1, "123", 10);
 
         assertNotNull(object.get("messages"));
         assertNotNull(object.getObjects("messages").get(0).getId());
@@ -40,7 +40,7 @@ public class AxRelationsTest extends AxTest {
     @Test
     public void parseUsers() throws Exception {
         enqueue(1, 200, getResource("relation-users-success.json"));
-        List<AxObject> objects = Ax.find(COLLECTION_1, 1);
+        List<AxObject> objects = ax.find(COLLECTION_1, 1);
 
         assertEquals(2, objects.size());
         assertNotNull(objects.get(0).getFile("image").getUrl());
@@ -52,7 +52,7 @@ public class AxRelationsTest extends AxTest {
     @Test
     public void parseCollection() throws Exception {
         enqueue(1, 200, getResource("relation-expanded-all-success.json"));
-        List<AxObject> objects = Ax.find(COLLECTION_1, 10);
+        List<AxObject> objects = ax.find(COLLECTION_1, 10);
 
         assertEquals(1, objects.size());
         AxObject object = objects.get(0);
@@ -65,13 +65,13 @@ public class AxRelationsTest extends AxTest {
     public void newRelation() throws Exception {
         enqueue(3, 200, getResource("save-object-success.json"));
 
-        AxObject object1 = new AxObject(COLLECTION_1);
-        AxObject object2 = new AxObject(COLLECTION_2);
-        AxObject object3 = new AxObject(COLLECTION_1);
+        AxObject object1 = ax.object(COLLECTION_1);
+        AxObject object2 = ax.object(COLLECTION_2);
+        AxObject object3 = ax.object(COLLECTION_1);
 
-        Ax.save(object1);
-        Ax.save(object2);
-        Ax.save(object3);
+        ax.save(object1);
+        ax.save(object2);
+        ax.save(object3);
 
         String name = "foo";
         object3.put("name", name);
@@ -96,13 +96,13 @@ public class AxRelationsTest extends AxTest {
             .removeRelation("messages", object4)
             .createRelation("comments", object2, object2);
 
-        Ax.save(object1);
+        ax.save(object1);
         RecordedRequest req1 = server.takeRequest();
         String res1 = req1.getBody().readUtf8();
         assertTrue(res1.contains(rel1));
         assertTrue(res1.contains(rel2));
 
-        Ax.save(object1);
+        ax.save(object1);
         RecordedRequest req2 = server.takeRequest();
         String res2 = req2.getBody().readUtf8();
         assertFalse(res2.contains(rel1));
@@ -112,7 +112,7 @@ public class AxRelationsTest extends AxTest {
     @Test(expected=AxException.class)
     public void unsavedRelation() throws Exception {
         AxObject object1 = getObject();
-        AxObject object2 = new AxObject(COLLECTION_1);
+        AxObject object2 = ax.object(COLLECTION_1);
 
         enqueue(1, 200, getResource("save-object-success.json"));
         object1.createRelation("comments", object2).save();
@@ -127,8 +127,8 @@ public class AxRelationsTest extends AxTest {
         enqueue(4, 200, getResource("save-object-success.json"));
         object2.createRelation("rel3", object3);
         object1.createRelation("rel2", object2);
-        Ax.saveAll(object3);
-        Ax.saveAll(object1);
+        ax.saveAll(object3);
+        ax.saveAll(object1);
 
         assertEquals(4, server.getRequestCount());
     }
@@ -138,13 +138,13 @@ public class AxRelationsTest extends AxTest {
         AxObject object = getObject();
 
         enqueue(1, 200, getResource("save-object-success.json"));
-        AxUser user = new AxUser("foo", "bar");
+        AxUser user = ax.user("foo", "bar");
         user.put("1", "2");
-        Ax.save(user);
+        ax.save(user);
 
         enqueue(1, 200, getResource("save-object-success.json"));
         object.createRelation("author", user);
-        Ax.save(object);
+        ax.save(object);
     }
 
     @Test
@@ -162,16 +162,16 @@ public class AxRelationsTest extends AxTest {
         object3.createRelation("baz", object1, object2);
         object4.createRelation("baz", object1);
 
-        Ax.save(object1); // 1 req
-        Ax.save(object2); // 1 req
-        Ax.save(object3); // 1 req
-        Ax.save(object4); // 1 req
+        ax.save(object1); // 1 req
+        ax.save(object2); // 1 req
+        ax.save(object3); // 1 req
+        ax.save(object4); // 1 req
 
         enqueue(13, 200, body);
-        Ax.saveAll(object1); // 3 reqs
-        Ax.saveAll(object2); // 3 reqs
-        Ax.saveAll(object3); // 3 reqs
-        Ax.saveAll(object4); // 4 reqs
+        ax.saveAll(object1); // 3 reqs
+        ax.saveAll(object2); // 3 reqs
+        ax.saveAll(object3); // 3 reqs
+        ax.saveAll(object4); // 4 reqs
 
         assertEquals(4+13, server.getRequestCount());
     }

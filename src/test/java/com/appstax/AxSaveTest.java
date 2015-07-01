@@ -1,6 +1,5 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.junit.Test;
 
@@ -12,11 +11,11 @@ public class AxSaveTest extends AxTest {
     public void save() throws Exception {
         enqueue(1, 200, getResource("save-object-success.json"));
 
-        AxObject object = new AxObject(COLLECTION_1);
+        AxObject object = ax.object(COLLECTION_1);
         assertNull(object.getId());
         object.put(PROPERTY_1, "1");
 
-        Ax.save(object);
+        ax.save(object);
         assertNotNull(object.getId());
         assertEquals("1", object.get(PROPERTY_1));
 
@@ -29,8 +28,8 @@ public class AxSaveTest extends AxTest {
     @Test(expected=AxException.class)
     public void saveError() throws Exception {
         enqueue(1, 400, getResource("save-object-error.json"));
-        AxObject object = new AxObject(COLLECTION_1);
-        Ax.save(object);
+        AxObject object = ax.object(COLLECTION_1);
+        ax.save(object);
     }
 
     @Test
@@ -39,7 +38,7 @@ public class AxSaveTest extends AxTest {
 
         AxObject object = getObject();
         object.put(PROPERTY_1, "3");
-        Ax.save(object);
+        ax.save(object);
 
         RecordedRequest req = server.takeRequest();
         assertEquals(object.getId(), "123");
@@ -53,7 +52,7 @@ public class AxSaveTest extends AxTest {
         enqueue(1, 400, getResource("save-object-error.json"));
         AxObject object = getObject();
         object.put(PROPERTY_1, "3");
-        Ax.save(object);
+        ax.save(object);
     }
 
 }

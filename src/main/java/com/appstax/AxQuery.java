@@ -9,23 +9,29 @@ import java.util.Map;
 
 final class AxQuery {
 
-    protected static List<AxObject> find(String collection, int depth) {
+    private AxClient client;
+
+    protected AxQuery(AxClient client) {
+        this.client = client;
+    }
+
+    protected List<AxObject> find(String collection, int depth) {
         String path = AxPaths.collection(collection, depth);
-        return objects(collection, AxClient.request(AxClient.Method.GET, path));
+        return objects(collection, client.request(AxClient.Method.GET, path));
     }
 
-    protected static AxObject find(String collection, String id, int depth) {
+    protected AxObject find(String collection, String id, int depth) {
         String path = AxPaths.object(collection, id, depth);
-        JSONObject properties = AxClient.request(AxClient.Method.GET, path);
-        return new AxObject(collection, properties);
+        JSONObject properties = client.request(AxClient.Method.GET, path);
+        return new AxObject(client, collection, properties);
     }
 
-    protected static List<AxObject> filter(String collection, String filter) {
+    protected List<AxObject> filter(String collection, String filter) {
         String path = AxPaths.filter(collection, filter);
-        return objects(collection, AxClient.request(AxClient.Method.GET, path));
+        return objects(collection, client.request(AxClient.Method.GET, path));
     }
 
-    protected static List<AxObject> filter(String collection, Map<String, String> properties) {
+    protected List<AxObject> filter(String collection, Map<String, String> properties) {
         StringBuilder b = new StringBuilder();
 
         for (Map.Entry<String, String> entry : properties.entrySet()) {
@@ -39,12 +45,12 @@ final class AxQuery {
         return filter(collection, b.toString().replaceFirst(" and ", ""));
     }
 
-    private static List<AxObject> objects(String collection, JSONObject json) {
+    private List<AxObject> objects(String collection, JSONObject json) {
         ArrayList<AxObject> objects = new ArrayList<AxObject>();
         JSONArray array = json.getJSONArray("objects");
 
         for(int i = 0; i < array.length(); i++) {
-            objects.add(new AxObject(collection, array.getJSONObject(i)));
+            objects.add(new AxObject(client, collection, array.getJSONObject(i)));
         }
 
         return objects;

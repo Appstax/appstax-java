@@ -9,13 +9,13 @@ public class AxObjectTest extends AxTest {
 
     @Test
     public void collection() {
-        AxObject object = new AxObject(COLLECTION_1);
+        AxObject object = ax.object(COLLECTION_1);
         assertEquals(COLLECTION_1, object.getCollection());
     }
 
     @Test
     public void properties() {
-        AxObject object = new AxObject(COLLECTION_1);
+        AxObject object = ax.object(COLLECTION_1);
         object.put(PROPERTY_1, 1);
         object.put(PROPERTY_2, 1.1);
         object.put(PROPERTY_3, "1");

@@ -1,106 +1,124 @@
 package com.appstax;
 
+import org.json.JSONObject;
+
 import java.util.*;
 
 public class Ax {
 
-    private static String appKey = "";
-    private static String apiUrl = "https://appstax.com/api/latest/";
-    private static volatile AxUser currentUser = null;
+    private AxClient client;
+    private AxSession session;
+    private AxQuery query;
 
-    public static String getAppKey() {
-        return appKey;
+    public Ax(String key) {
+        this(key, "https://appstax.com/api/latest/");
     }
 
-    public static void setAppKey(String key) {
-        appKey = key;
+    public Ax(String key, String url) {
+        client = new AxClient(parseKey(key), parseUrl(url));
+        session = new AxSession(client);
+        query = new AxQuery(client);
     }
 
-    public static String getApiUrl() {
-        return apiUrl;
+    public AxObject object(String collection) {
+        return new AxObject(client, collection);
     }
 
-    public static void setApiUrl(String url) {
-        apiUrl = parseUrl(url);
+    public AxObject object(String collection, JSONObject properties) {
+        return new AxObject(client, collection, properties);
     }
 
-    public static String getApiSocket() {
-        return apiUrl.replaceFirst("^http", "ws");
+    public AxFile file(String name, byte[] data) {
+        return new AxFile(client, name, data);
     }
 
-    public static AxObject save(AxObject object) {
+    public AxUser user(String username, String sessionId) {
+        return new AxUser(client, username, sessionId);
+    }
+
+    public AxChannel channel(String name, AxListener listener) {
+        return new AxChannel(client, name, listener);
+    }
+
+    public AxObject save(AxObject object) {
         return object.save();
     }
 
-    public static AxObject saveAll(AxObject object) {
+    public AxObject saveAll(AxObject object) {
         for (AxObject target : object.flatten(null)) {
             target.save();
         }
         return object;
     }
 
-    public static AxObject remove(AxObject object) {
+    public AxObject remove(AxObject object) {
         return object.remove();
     }
 
-    public static AxObject refresh(AxObject object) {
+    public AxObject refresh(AxObject object) {
         return object.refresh();
     }
 
-    public static AxFile load(AxFile file) {
+    public AxFile load(AxFile file) {
         return file.load();
     }
 
-    public static List<AxObject> find(String collection) {
-        return AxQuery.find(collection, 0);
+    public List<AxObject> find(String collection) {
+        return query.find(collection, 0);
     }
 
-    public static List<AxObject> find(String collection, int depth) {
-        return AxQuery.find(collection, depth);
+    public List<AxObject> find(String collection, int depth) {
+        return query.find(collection, depth);
     }
 
-    public static AxObject find(String collection, String id) {
-        return AxQuery.find(collection, id, 0);
+    public AxObject find(String collection, String id) {
+        return query.find(collection, id, 0);
     }
 
-    public static AxObject find(String collection, String id, int depth) {
-        return AxQuery.find(collection, id, depth);
+    public AxObject find(String collection, String id, int depth) {
+        return query.find(collection, id, depth);
     }
 
-    public static List<AxObject> filter(String collection, String filter) {
-        return AxQuery.filter(collection, filter);
+    public List<AxObject> filter(String collection, String filter) {
+        return query.filter(collection, filter);
     }
 
-    public static List<AxObject> filter(String collection, Map<String, String> properties) {
-        return AxQuery.filter(collection, properties);
+    public List<AxObject> filter(String collection, Map<String, String> properties) {
+        return query.filter(collection, properties);
     }
 
-    public static AxChannel channel(String name, AxListener listener) {
-        return new AxChannel(name, listener);
+    public AxUser getCurrentUser() {
+        return client.getUser();
     }
 
-    public static AxUser getCurrentUser() {
-        return Ax.currentUser;
+    public AxUser signup(String username, String password) {
+        client.setUser(session.signup(username, password));
+        return client.getUser();
     }
 
-    public static AxUser signup(String username, String password) {
-        Ax.currentUser = AxSession.signup(username, password);
-        return Ax.currentUser;
+    public AxUser login(String username, String password) {
+        client.setUser(session.login(username, password));
+        return client.getUser();
     }
 
-    public static AxUser login(String username, String password) {
-        Ax.currentUser = AxSession.login(username, password);
-        return Ax.currentUser;
-    }
-
-    public static void logout() {
-        if (Ax.currentUser != null) {
-            AxSession.logout(Ax.currentUser);
-            Ax.currentUser = null;
+    public void logout() {
+        if (client.getUser() != null) {
+            session.logout(client.getUser());
+            client.setUser(null);
         }
     }
 
-    private static String parseUrl(String url) {
+    private String parseKey(String key) {
+        if (key.isEmpty()) {
+            throw new AxException("Empty API key");
+        }
+        return key;
+    }
+
+    private String parseUrl(String url) {
+        if (url.isEmpty()) {
+            throw new AxException("Empty API URL");
+        }
         return url.replaceAll("/$", "") + "/";
     }
 

@@ -13,7 +13,7 @@ public class AxQueryTest extends AxTest {
     @Test
     public void findOne() throws Exception {
         enqueue(1, 200, getResource("find-object-success.json"));
-        AxObject object = Ax.find(COLLECTION_1, "123");
+        AxObject object = ax.find(COLLECTION_1, "123");
         RecordedRequest req = server.takeRequest();
 
         assertEquals("GET", req.getMethod());
@@ -27,14 +27,14 @@ public class AxQueryTest extends AxTest {
     @Test(expected=AxException.class)
     public void findError() throws Exception {
         enqueue(1, 400, getResource("find-object-error.json"));
-        AxObject object = Ax.find(COLLECTION_1, "404");
+        ax.find(COLLECTION_1, "404");
     }
 
     @Test
     public void findMany() throws Exception {
         enqueue(1, 200, getResource("find-objects-success.json"));
 
-        List<AxObject> objects = Ax.find(COLLECTION_1);
+        List<AxObject> objects = ax.find(COLLECTION_1);
         assertEquals(3, objects.size());
         assertEquals("1", objects.get(0).get("title"));
         assertEquals("3", objects.get(2).get("title"));
@@ -44,7 +44,7 @@ public class AxQueryTest extends AxTest {
     public void expand() throws Exception {
         enqueue(1, 200, getResource("find-objects-success.json"));
 
-        List<AxObject> objects = Ax.find(COLLECTION_1, 2);
+        List<AxObject> objects = ax.find(COLLECTION_1, 2);
         RecordedRequest req = server.takeRequest();
         assertEquals("/objects/" + COLLECTION_1 + "?expanddepth=2", req.getPath());
     }
@@ -54,7 +54,7 @@ public class AxQueryTest extends AxTest {
         enqueue(1, 200, getResource("find-objects-success.json"));
 
         String filter = "Age > 42 and name like 'Alex%'";
-        List<AxObject> objects = Ax.filter(COLLECTION_1, filter);
+        List<AxObject> objects = ax.filter(COLLECTION_1, filter);
         assertEquals(3, objects.size());
 
         RecordedRequest req = server.takeRequest();
@@ -68,10 +68,10 @@ public class AxQueryTest extends AxTest {
     public void filterProps() throws Exception {
         enqueue(1, 200, getResource("find-objects-success.json"));
 
-        HashMap properties = new HashMap<String, String>();
+        HashMap properties = new HashMap<>();
         properties.put("foo", "b r");
 
-        List<AxObject> objects = Ax.filter(COLLECTION_1, properties);
+        List<AxObject> objects = ax.filter(COLLECTION_1, properties);
         assertEquals(3, objects.size());
 
         RecordedRequest req = server.takeRequest();

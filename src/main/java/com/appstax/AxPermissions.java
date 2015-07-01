@@ -10,34 +10,36 @@ final class AxPermissions {
     private static final String KEY_PERMISSIONS = "permissions";
     private static final String KEY_USER = "username";
 
+    private AxClient client;
     private JSONObject access;
 
-    public AxPermissions() {
+    protected AxPermissions(AxClient client) {
+        this.client = client;
         this.access = new JSONObject();
         this.access.put(KEY_GRANTS, new JSONArray());
         this.access.put(KEY_REVOKES, new JSONArray());
     }
 
-    public void grantPublic(String id, String... permissions) {
+    protected void grantPublic(String id, String... permissions) {
         this.create(id, KEY_GRANTS, "*", permissions);
     }
 
-    public void grant(String id, String username, String... permissions) {
+    protected void grant(String id, String username, String... permissions) {
         this.create(id, KEY_GRANTS, username, permissions);
     }
 
-    public void revokePublic(String id, String... permissions) {
+    protected void revokePublic(String id, String... permissions) {
         this.create(id, KEY_REVOKES, "*", permissions);
     }
 
-    public void revoke(String id, String username, String... permissions) {
+    protected void revoke(String id, String username, String... permissions) {
         this.create(id, KEY_REVOKES, username, permissions);
     }
 
-    public void save() {
+    protected void save() {
         if (updates()) {
             String path = AxPaths.permissions();
-            AxClient.request(AxClient.Method.POST, path, this.access);
+            client.request(AxClient.Method.POST, path, this.access);
         }
     }
 

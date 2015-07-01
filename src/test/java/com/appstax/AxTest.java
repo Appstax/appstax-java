@@ -26,18 +26,16 @@ public abstract class AxTest {
     public static final String PROPERTY_3 = "property3";
 
     protected MockWebServer server;
+    protected Ax ax;
 
     @Rule
     public Timeout globalTimeout = new Timeout(5000);
 
     @Before
     public void before() throws Exception {
-        Ax.setAppKey(APP_KEY_1);
-
         server = new MockWebServer();
         server.start();
-
-        Ax.setApiUrl(server.getUrl("/").toString());
+        ax = new Ax(APP_KEY_1, server.getUrl("/").toString());
     }
 
     @After
@@ -54,7 +52,7 @@ public abstract class AxTest {
     public AxObject getObject() throws Exception {
         String json = getResource("find-object-success.json");
         JSONObject props = new JSONObject(json);
-        return new AxObject(COLLECTION_1, props);
+        return ax.object(COLLECTION_1, props);
     }
 
     public void enqueue(int times, int status, String body) {

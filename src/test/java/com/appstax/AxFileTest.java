@@ -13,13 +13,13 @@ public class AxFileTest extends AxTest {
         enqueue(1, 200, "");
 
         String filename = "file-example-image.jpg";
-        AxObject object = new AxObject(COLLECTION_2);
-        AxFile file = new AxFile(filename, getResource(filename).getBytes());
+        AxObject object = ax.object(COLLECTION_2);
+        AxFile file = ax.file(filename, getResource(filename).getBytes());
         object.put("image", file);
         assertNull(object.getId());
         assertNull(object.getFile("image").getUrl());
 
-        Ax.save(object);
+        ax.save(object);
         assertNotNull(object.getId());
         assertNotNull(object.getFile("image").getUrl());
         assertTrue(object.getFile("image").getUrl().startsWith("http"));
@@ -44,13 +44,13 @@ public class AxFileTest extends AxTest {
         enqueue(3, 200, "");
 
         String filename = "file-example-image.jpg";
-        AxObject object = new AxObject(COLLECTION_2);
+        AxObject object = ax.object(COLLECTION_2);
 
-        object.put("image1", new AxFile("file-example-image-1.jpg", getResource(filename).getBytes()));
-        object.put("image2", new AxFile("file-example-image-2.jpg", getResource(filename).getBytes()));
-        object.put("image3", new AxFile("file-example-image-3.jpg", getResource(filename).getBytes()));
+        object.put("image1", ax.file("file-example-image-1.jpg", getResource(filename).getBytes()));
+        object.put("image2", ax.file("file-example-image-2.jpg", getResource(filename).getBytes()));
+        object.put("image3", ax.file("file-example-image-3.jpg", getResource(filename).getBytes()));
 
-        Ax.save(object);
+        ax.save(object);
 
         RecordedRequest req1 = server.takeRequest();
         RecordedRequest req2 = server.takeRequest();
@@ -68,12 +68,12 @@ public class AxFileTest extends AxTest {
         enqueue(3, 200, getResource("save-object-success.json"));
 
         String filename = "file-example-image.jpg";
-        AxObject object = new AxObject(COLLECTION_2);
-        AxFile file = new AxFile(filename, getResource(filename).getBytes());
+        AxObject object = ax.object(COLLECTION_2);
+        AxFile file = ax.file(filename, getResource(filename).getBytes());
         object.put("image", file);
 
-        Ax.save(object);
-        Ax.save(object);
+        ax.save(object);
+        ax.save(object);
 
         assertEquals(3, server.getRequestCount());
     }
@@ -83,7 +83,7 @@ public class AxFileTest extends AxTest {
         enqueue(1, 200, getResource("find-file-success.json"));
 
         String name = "file-example-image.jpg";
-        AxObject object = Ax.find(COLLECTION_1, "123");
+        AxObject object = ax.find(COLLECTION_1, "123");
         AxFile file = object.getFile("file");
         assertNotNull(file);
 
@@ -103,7 +103,7 @@ public class AxFileTest extends AxTest {
         req = server.takeRequest();
         assertEquals("GET", req.getMethod());
         assertEquals("http://" + req.getHeaders().get("Host"), server.getUrl("").toString());
-        assertEquals(Ax.getAppKey(), req.getHeader("x-appstax-appkey"));
+        assertEquals(APP_KEY_1, req.getHeader("x-appstax-appkey"));
     }
 
     @Test(expected=AxException.class)
@@ -111,7 +111,7 @@ public class AxFileTest extends AxTest {
         enqueue(1, 200, getResource("find-file-success.json"));
         enqueue(1, 400, getResource("find-object-error.json"));
 
-        AxObject object = Ax.find(COLLECTION_1, "123");
+        AxObject object = ax.find(COLLECTION_1, "123");
         AxFile file = object.getFile("file");
         assertNull(file.getData());
 

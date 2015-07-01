@@ -17,11 +17,13 @@ public final class AxChannel {
     private WebSocket socket;
     private List<JSONObject> queue;
     private AxListener listener;
+    private AxClient client;
     private String name;
 
-    protected AxChannel(String name, AxListener listener) {
+    protected AxChannel(AxClient client, String name, AxListener listener) {
         this.queue = new CopyOnWriteArrayList<>();
         this.listener = listener;
+        this.client = client;
         this.name = name;
 
         if (this.listener == null) {
@@ -29,7 +31,7 @@ public final class AxChannel {
         }
 
         this.validate();
-        this.connect();
+        this.connectAsync();
     }
 
     public AxChannel send(AxObject object) {
@@ -50,19 +52,19 @@ public final class AxChannel {
         return this.socket != null;
     }
 
-    private void connect() {
+    private void connectAsync() {
         new Thread() {
             public void run() {
-                getSocket();
+                connect();
             }
         }.start();
     }
 
-    private void getSocket() {
+    private void connect() {
         String id = getSessionId();
 
         if (id != null) {
-            AxClient.socket(
+            client.socket(
                 AxPaths.realtime(id),
                 new Dispatcher()
             );
@@ -71,7 +73,7 @@ public final class AxChannel {
 
     private String getSessionId() {
         try {
-            return AxClient.request(
+            return client.request(
                 AxClient.Method.POST,
                 AxPaths.realtimeSessions()
             ).getString("realtimeSessionId");
@@ -109,7 +111,7 @@ public final class AxChannel {
     private void flush() {
         if (isOpen()) {
             for (JSONObject item : this.queue) {
-                write(item);
+                writeAsync(item);
             }
             this.queue.clear();
         }
@@ -126,11 +128,19 @@ public final class AxChannel {
         }
     }
 
+    private void writeAsync(final JSONObject item) {
+        new Thread() {
+            public void run() {
+                write(item);
+            }
+        }.start();
+    }
+
     private void write(JSONObject item) {
         try {
             this.socket.sendMessage(
-                WebSocket.PayloadType.TEXT,
-                new Buffer().writeUtf8(item.toString())
+                    WebSocket.PayloadType.TEXT,
+                    new Buffer().writeUtf8(item.toString())
             );
         } catch (IOException e) {
             listener.onError(e);
@@ -172,7 +182,7 @@ public final class AxChannel {
         @Override
         public void onMessage(BufferedSource source, WebSocket.PayloadType payloadType) throws IOException {
             try {
-                AxEvent event = new AxEvent(name, read(source));
+                AxEvent event = new AxEvent(client, name, read(source));
                 switch (event.getType()) {
                     case "message": listener.onMessage(event); break;
                     case "error":   listener.onError(new AxException(event.getString())); break;

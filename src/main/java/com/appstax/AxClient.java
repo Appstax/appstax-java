@@ -10,45 +10,67 @@ import java.io.IOException;
 
 final class AxClient {
 
-    protected static enum Method {
-        GET,
-        PUT,
-        POST,
-        DELETE
+    protected enum Method { GET, PUT, POST, DELETE }
+
+    private static String TYPE_JSON = "application/json; charset=utf-8";
+    private static String TYPE_FORM = "multipart/form-data";
+    private static String TYPE_BIN = "application/octet-stream";
+
+    private String key;
+    private String url;
+    private AxUser user;
+    private OkHttpClient ok = new OkHttpClient();
+
+    protected AxClient(String key, String url) {
+        this.key = key;
+        this.url = url;
     }
 
-    private static OkHttpClient client = new OkHttpClient();
+    protected AxUser getUser() {
+        return user;
+    }
 
-    protected static JSONObject request(Method method, String path) {
+    protected void setUser(AxUser user) {
+        this.user = user;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getSocketUrl() {
+        return url.replaceFirst("^http", "ws");
+    }
+
+    protected JSONObject request(Method method, String path) {
         return request(method, path, null);
     }
 
-    protected static JSONObject request(Method method, String path, JSONObject json) {
+    protected JSONObject request(Method method, String path, JSONObject json) {
         Request.Builder req = new Request.Builder();
-        setPath(req, path);
+        setHttpPath(req, path);
         setKeys(req);
 
-        String type = "application/json; charset=utf-8";
-        req.addHeader("Content-Type", type);
-        req.addHeader("Accept", type);
+        req.addHeader("Content-Type", TYPE_JSON);
+        req.addHeader("Accept", TYPE_JSON);
 
         String content = json != null ? json.toString() : "";
-        RequestBody body = RequestBody.create(MediaType.parse(type), content);
+        RequestBody body = RequestBody.create(MediaType.parse(TYPE_JSON), content);
         setBody(req, method, body);
 
         return parse(execute(req.build()));
     }
 
-    protected static JSONObject multipart(Method method, String path, String field, String name, final byte[] data) {
+    protected JSONObject multipart(Method method, String path, String field, String name, final byte[] data) {
         Request.Builder req = new Request.Builder();
-        req.addHeader("Content-Type", "multipart/form-data");
-        setPath(req, path);
+        req.addHeader("Content-Type", TYPE_FORM);
+        setHttpPath(req, path);
         setKeys(req);
 
         MultipartBuilder multipart = new MultipartBuilder();
         multipart.addFormDataPart(field, name, new RequestBody() {
             public MediaType contentType() {
-                return MediaType.parse("application/octet-stream");
+                return MediaType.parse(TYPE_BIN);
             }
             public void writeTo(BufferedSink bufferedSink) throws IOException {
                 bufferedSink.write(data);
@@ -60,10 +82,13 @@ final class AxClient {
         return parse(execute(req.build()));
     }
 
-    protected static byte[] file(Method method, String path) {
+    protected byte[] file(Method method, String path) {
         try {
-            Request req = emptyRequest(method, path);
-            Response res = client.newCall(req).execute();
+            Request.Builder req = new Request.Builder();
+            setHttpPath(req, path);
+            setKeys(req);
+            setBody(req, method, null);
+            Response res = ok.newCall(req.build()).execute();
             checkReturnCode(res);
             return res.body().bytes();
         } catch (IOException e) {
@@ -71,13 +96,17 @@ final class AxClient {
         }
     }
 
-    protected static void socket(String path, WebSocketListener listener) {
-        WebSocketCall.create(client, emptyRequest(Method.GET, path)).enqueue(listener);
+    protected void socket(String path, WebSocketListener listener) {
+        Request.Builder req = new Request.Builder();
+        setWsPath(req, path);
+        setKeys(req);
+        setBody(req, Method.GET, null);
+        WebSocketCall.create(ok, req.build()).enqueue(listener);
     }
 
-    private static String execute(Request req) {
+    private String execute(Request req) {
         try {
-            Response res = client.newCall(req).execute();
+            Response res = ok.newCall(req).execute();
             checkReturnCode(res);
             return res.body().string();
         } catch (IOException e) {
@@ -85,45 +114,37 @@ final class AxClient {
         }
     }
 
-    private static Request emptyRequest(Method method, String path) {
-        Request.Builder req = new Request.Builder();
-        setPath(req, path);
-        setKeys(req);
-        setBody(req, method, null);
-        return req.build();
+    private void setHttpPath(Request.Builder req, String path) {
+        req.url(path.startsWith("http") ? path : getUrl() + path);
     }
 
-    private static void setPath(Request.Builder req, String path) {
-        req.url(path);
+    private void setWsPath(Request.Builder req, String path) {
+        req.url(path.startsWith("ws") ? path : getSocketUrl() + path);
     }
 
-    private static void setKeys(Request.Builder req) {
+    private void setKeys(Request.Builder req) {
         setAppKey(req);
         setSessionKey(req);
     }
 
-    private static void setAppKey(Request.Builder req) {
-        if (Ax.getAppKey().equals("")) {
-            throw new AxException("Set the app key before making requests.");
-        } else {
-            req.addHeader("x-appstax-appkey", Ax.getAppKey());
+    private void setAppKey(Request.Builder req) {
+        req.addHeader("x-appstax-appkey", key);
+    }
+
+    private void setSessionKey(Request.Builder req) {
+        if (getUser() != null) {
+            req.addHeader("x-appstax-sessionid", getUser().getSessionId());
         }
     }
 
-    private static void setSessionKey(Request.Builder req) {
-        if (Ax.getCurrentUser() != null) {
-            req.addHeader("x-appstax-sessionid", Ax.getCurrentUser().getSessionId());
-        }
+    private void setBody(Request.Builder req, Method method, RequestBody body) {
+        if (method == Method.GET) req.get();
+        if (method == Method.PUT) req.put(body);
+        if (method == Method.POST) req.post(body);
+        if (method == Method.DELETE) req.delete(body);
     }
 
-    private static void setBody(Request.Builder req, Method method, RequestBody body) {
-        if (method == Method.GET) req = req.get();
-        if (method == Method.PUT) req = req.put(body);
-        if (method == Method.POST) req = req.post(body);
-        if (method == Method.DELETE) req = req.delete(body);
-    }
-
-    private static void checkReturnCode(Response res) {
+    private void checkReturnCode(Response res) {
         if (res.isSuccessful()) {
             return;
         }
@@ -140,7 +161,7 @@ final class AxClient {
         }
     }
 
-    private static JSONObject parse(String body) {
+    private JSONObject parse(String body) {
         if (body == null || body.length() == 0) {
             return new JSONObject();
         }

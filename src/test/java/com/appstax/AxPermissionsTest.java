@@ -11,7 +11,7 @@ public class AxPermissionsTest extends AxTest {
     public void publicAccess() throws Exception {
         enqueue(2, 200, getResource("save-object-success.json"));
 
-        AxObject object = new AxObject(COLLECTION_2);
+        AxObject object = ax.object(COLLECTION_2);
         object.grantPublic("read", "update");
         object.revokePublic("delete");
         object.save();
@@ -32,7 +32,7 @@ public class AxPermissionsTest extends AxTest {
     public void privateAccess() throws Exception {
         enqueue(2, 200, getResource("save-object-success.json"));
 
-        AxObject object = new AxObject(COLLECTION_2);
+        AxObject object = ax.object(COLLECTION_2);
         object.grant("foo", "update");
         object.revoke("bar", "read", "delete");
         object.save();

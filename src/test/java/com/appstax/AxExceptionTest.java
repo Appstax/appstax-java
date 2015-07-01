@@ -11,7 +11,7 @@ public class AxExceptionTest extends AxTest {
         enqueue(1, 400, getResource("save-object-error.json"));
 
         try {
-            Ax.save(new AxObject("c"));
+            ax.save(ax.object("c"));
         } catch(AxException e) {
             assertEquals(400, e.getStatus());
             assertEquals("rzeop5miXOvMB", e.getId());

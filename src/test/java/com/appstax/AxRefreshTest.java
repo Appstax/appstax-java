@@ -1,6 +1,5 @@
 package com.appstax;
 
-import com.squareup.okhttp.mockwebserver.MockWebServer;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.junit.Test;
 
@@ -14,7 +13,7 @@ public class AxRefreshTest extends AxTest {
 
         AxObject object = getObject();
         object.put("title", "unsaved");
-        Ax.refresh(object);
+        ax.refresh(object);
 
         RecordedRequest req = server.takeRequest();
         assertEquals("GET", req.getMethod());

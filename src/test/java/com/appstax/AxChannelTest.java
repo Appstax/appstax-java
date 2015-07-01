@@ -20,7 +20,7 @@ public class AxChannelTest extends AxTest {
 
     @Test(expected=AxException.class)
     public void name() {
-        Ax.channel("foo", null);
+        ax.channel("foo", null);
     }
 
     @Test
@@ -29,7 +29,7 @@ public class AxChannelTest extends AxTest {
         final AtomicReference<String> res = new AtomicReference<>();
         socket(new Recorder(lock, res));
 
-        AxChannel channel = Ax.channel("public/chat", null);
+        AxChannel channel = ax.channel("public/chat", null);
         assertFalse(channel.isOpen());
         lock.await();
         assertTrue(channel.isOpen());
@@ -47,7 +47,7 @@ public class AxChannelTest extends AxTest {
         final AtomicReference<AxEvent> res = new AtomicReference<>();
         socket(new Sender(getResource("channel-message-string.json")));
 
-        Ax.channel("public/chat", new AxListener() {
+        ax.channel("public/chat", new AxListener() {
             public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
@@ -65,10 +65,10 @@ public class AxChannelTest extends AxTest {
         final AtomicReference<AxEvent> res = new AtomicReference<>();
         socket(new Sender(getResource("channel-message-object.json")));
 
-        AxObject object = new AxObject(COLLECTION_1);
+        AxObject object = ax.object(COLLECTION_1);
         object.put("foo", "bar");
 
-        Ax.channel("public/chat", new AxListener() {
+        ax.channel("public/chat", new AxListener() {
             public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();

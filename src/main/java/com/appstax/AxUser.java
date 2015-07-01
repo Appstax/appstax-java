@@ -7,18 +7,18 @@ public final class AxUser extends AxObject {
     private String sessionId = null;
     private String username = null;
 
-    public AxUser(JSONObject properties) {
-        super("users", properties);
+    protected AxUser(AxClient client, JSONObject properties) {
+        super(client, "users", properties);
     }
 
-    public AxUser(String username, String sessionId, JSONObject properties) {
-        this(properties);
+    protected AxUser(AxClient client, String username, String sessionId, JSONObject properties) {
+        this(client, properties);
         this.username = username;
         this.sessionId = sessionId;
     }
 
-    public AxUser(String username, String sessionId) {
-        this(username, sessionId, new JSONObject());
+    protected AxUser(AxClient client, String username, String sessionId) {
+        this(client, username, sessionId, new JSONObject());
     }
 
     public String getSessionId() {

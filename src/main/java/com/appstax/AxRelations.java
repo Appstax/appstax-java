@@ -7,11 +7,13 @@ import java.util.*;
 
 final class AxRelations {
 
+    private AxClient client;
     private Map<String, List<AxObject>> relations;
     private Map<String, List<AxObject>> additions;
     private Map<String, List<AxObject>> removals;
 
-    protected AxRelations(JSONObject properties) {
+    protected AxRelations(AxClient client, JSONObject properties) {
+        this.client = client;
         this.relations = parse(properties);
         this.additions = new HashMap<>();
         this.removals = new HashMap<>();
@@ -198,7 +200,7 @@ final class AxRelations {
 
         for (int i = 0; i < items.length(); i++) {
             JSONObject data = items.getJSONObject(i);
-            objects.add(new AxObject(collection, data));
+            objects.add(new AxObject(client, collection, data));
         }
 
         return objects;

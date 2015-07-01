@@ -13,7 +13,7 @@ public class AxRemoveTest extends AxTest {
         assertEquals("123", object.getId());
 
         enqueue(1, 200, "");
-        Ax.remove(object);
+        ax.remove(object);
         assertEquals(null, object.getId());
         assertEquals(null, object.get("title"));
 
@@ -25,8 +25,8 @@ public class AxRemoveTest extends AxTest {
     @Test(expected=AxException.class)
     public void unsaved() throws Exception {
         enqueue(1, 404, getResource("remove-object-error.json"));
-        AxObject object = new AxObject(COLLECTION_1);
-        Ax.remove(object);
+        AxObject object = ax.object(COLLECTION_1);
+        ax.remove(object);
     }
 
 }
