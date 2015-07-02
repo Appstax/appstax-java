@@ -7,6 +7,7 @@ import java.util.*;
 public class Ax {
 
     private AxClient client;
+    private AxSocket socket;
     private AxSession session;
     private AxQuery query;
 
@@ -16,6 +17,7 @@ public class Ax {
 
     public Ax(String key, String url) {
         client = new AxClient(parseKey(key), parseUrl(url));
+        socket = new AxSocket(client);
         session = new AxSession(client);
         query = new AxQuery(client);
     }
@@ -37,7 +39,7 @@ public class Ax {
     }
 
     public AxChannel channel(String name, AxListener listener) {
-        return new AxChannel(client, name, listener);
+        return new AxChannel(socket, name, listener);
     }
 
     public AxObject save(AxObject object) {

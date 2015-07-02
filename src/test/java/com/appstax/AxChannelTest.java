@@ -20,39 +20,92 @@ public class AxChannelTest extends AxTest {
 
     @Test(expected=AxException.class)
     public void name() {
-        ax.channel("foo", null);
+        ax.channel("invalid", null);
     }
 
     @Test
     public void subscribe() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
         final AtomicReference<String> res = new AtomicReference<>();
-        socket(new Recorder(lock, res));
+        socket(new Recorder(lock, res, "subscribe"));
 
-        AxChannel channel = ax.channel("public/chat", null);
-        assertFalse(channel.isOpen());
+        AxChannel c1 = ax.channel("public/sub1", null);
+        AxChannel c2 = ax.channel("public/sub2", null);
+        assertFalse(c1.connected());
+        assertFalse(c2.connected());
+
         lock.await();
-        assertTrue(channel.isOpen());
+        assertTrue(c1.connected());
+        assertTrue(c2.connected());
 
         JSONObject msg = new JSONObject(res.get());
-        assertEquals("public/chat", msg.get("channel"));
+        assertTrue(msg.getString("channel").startsWith("public/sub"));
         assertEquals("subscribe", msg.get("command"));
         assertFalse(msg.has("message"));
         assertTrue(msg.has("id"));
     }
 
+    @Test(expected=AxException.class)
+    public void sendWildcard() throws Exception {
+        socket(null);
+        ax.channel("public/*", null).send("1");
+    }
+
+    @Test
+    public void receiveWildcard() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(4*4);
+        socket(new Sender(getResource("channel-receive-wildcard.json")));
+
+        AxListener count = new AxListener() {
+            public void onMessage(AxEvent event) {
+                lock.countDown();
+            }
+        };
+
+        AxListener fail = new AxListener() {
+            public void onMessage(AxEvent event) {
+                throw new AssertionError();
+            }
+        };
+
+        for (int i = 0; i < 4; i++) {
+            ax.channel("public/*", count);
+            ax.channel("public/im/*", count);
+            ax.channel("public/im/*", count);
+            ax.channel("public/im/f*", count);
+
+            ax.channel("public/", fail);
+            ax.channel("public/im/", fail);
+            ax.channel("public/im/f", fail);
+            ax.channel("public/im/fooo", fail);
+        }
+
+        lock.await();
+    }
+
     @Test
     public void sendString() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
-        final AtomicReference<AxEvent> res = new AtomicReference<>();
-        socket(new Sender(getResource("channel-message-string.json")));
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "publish"));
 
-        ax.channel("public/chat", new AxListener() {
+        ax.channel("public/sendString", null).send("123");
+        lock.await();
+        assertTrue(res.get().contains("\"message\":\"123\""));
+    }
+
+    @Test
+    public void receiveString() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<AxEvent> res = new AtomicReference<>();
+        socket(new Sender(getResource("channel-receive-string.json")));
+
+        ax.channel("public/receiveString", new AxListener() {
             public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
             }
-        }).send("321");
+        });
 
         lock.await();
         assertEquals("321", res.get().getString());
@@ -62,18 +115,30 @@ public class AxChannelTest extends AxTest {
     @Test
     public void sendObject() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
-        final AtomicReference<AxEvent> res = new AtomicReference<>();
-        socket(new Sender(getResource("channel-message-object.json")));
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "publish"));
 
         AxObject object = ax.object(COLLECTION_1);
-        object.put("foo", "bar");
+        ax.channel("public/sendObject", null).send(object);
+        lock.await();
 
-        ax.channel("public/chat", new AxListener() {
+        String act = res.get();
+        String exp = "\\\"collection\\\":\\\"" + COLLECTION_1 + "\\\"";
+        assertTrue(act.contains(exp));
+    }
+
+    @Test
+    public void receiveObject() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<AxEvent> res = new AtomicReference<>();
+        socket(new Sender(getResource("channel-receive-object.json")));
+
+        ax.channel("public/receiveObject", new AxListener() {
             public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
             }
-        }).send(object);
+        });
 
         lock.await();
         AxObject result = res.get().getObject();
@@ -86,40 +151,28 @@ public class AxChannelTest extends AxTest {
         server.enqueue(new MockResponse().withWebSocketUpgrade(listener));
     }
 
-    protected static class EmptyListener implements WebSocketListener {
-
-        @Override
-        public void onMessage(BufferedSource source, WebSocket.PayloadType type) throws IOException {}
-
-        @Override
-        public void onOpen(WebSocket socket, Response response) {}
-
-        @Override
-        public void onPong(Buffer payload) {}
-
-        @Override
-        public void onClose(int code, String reason) {}
-
-        @Override
-        public void onFailure(IOException e, Response response) {}
-
-    }
-
     protected static class Recorder extends EmptyListener {
 
         final CountDownLatch lock;
         final AtomicReference<String> res;
+        final String pattern;
 
-        public Recorder(CountDownLatch lock, AtomicReference<String> res) {
+        public Recorder(CountDownLatch lock, AtomicReference<String> res, String pattern) {
             super();
+            this.pattern = pattern;
             this.lock = lock;
             this.res = res;
         }
 
         @Override
         public void onMessage(BufferedSource source, WebSocket.PayloadType type) throws IOException {
-            res.set(source.readUtf8());
-            lock.countDown();
+            String payload = source.readUtf8();
+
+            if (payload.contains(pattern)) {
+                res.set(payload);
+                lock.countDown();
+            }
+
             source.close();
         }
 
@@ -152,6 +205,25 @@ public class AxChannelTest extends AxTest {
             }.start();
 
         }
+
+    }
+
+    protected static class EmptyListener implements WebSocketListener {
+
+        @Override
+        public void onMessage(BufferedSource source, WebSocket.PayloadType type) throws IOException {}
+
+        @Override
+        public void onOpen(WebSocket socket, Response response) {}
+
+        @Override
+        public void onPong(Buffer payload) {}
+
+        @Override
+        public void onClose(int code, String reason) {}
+
+        @Override
+        public void onFailure(IOException e, Response response) {}
 
     }
 

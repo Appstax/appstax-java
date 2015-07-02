@@ -29,7 +29,7 @@ public abstract class AxTest {
     protected Ax ax;
 
     @Rule
-    public Timeout globalTimeout = new Timeout(5000);
+    public Timeout globalTimeout = new Timeout(1000);
 
     @Before
     public void before() throws Exception {
