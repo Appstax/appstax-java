@@ -46,18 +46,15 @@ class AxSocket implements WebSocketListener {
 
     private void open() {
         if (!connected() && !connecting) {
-            connect();
-        }
-    }
+            connecting = true;
 
-    private void connect() {
-        connecting = true;
-        new Thread() {
-            public void run() {
-                getSocket(getSessionId());
-                connecting = false;
-            }
-        }.start();
+            new Thread() {
+                public void run() {
+                    getSocket(getSession());
+                    connecting = false;
+                }
+            }.start();
+        }
     }
 
     private void getSocket(String id) {
@@ -66,7 +63,7 @@ class AxSocket implements WebSocketListener {
         }
     }
 
-    private String getSessionId() {
+    private String getSession() {
         try {
             return client.request(
                 AxClient.Method.POST,
@@ -123,10 +120,7 @@ class AxSocket implements WebSocketListener {
     private void onMessageAll(AxEvent event) {
         for (AxChannel channel : channels) {
             if (match(channel, event)) {
-                switch (event.getType()) {
-                    case "message": channel.onMessage(event); break;
-                    case "error":   channel.onError(new AxException(event.getString())); break;
-                }
+                channel.onEvent(event);
             }
         }
     }

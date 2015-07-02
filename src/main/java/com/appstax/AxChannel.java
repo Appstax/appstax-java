@@ -19,7 +19,11 @@ public final class AxChannel {
             this.listener = new AxListener() {};
         }
 
-        this.socket.listen(this);
+        new Thread() {
+            public void run() {
+                create();
+            }
+        }.start();
     }
 
     public String getName() {
@@ -41,6 +45,18 @@ public final class AxChannel {
         socket.append(this, payload(name, "publish", message));
     }
 
+    public void grant(AxChannel channel, String... users) {
+        if (isPrivate(name)) {
+            // TODO: grant access
+        }
+    }
+
+    public void revoke(AxChannel channel, String... users) {
+        if (isPrivate(name)) {
+            // TODO: revoke access
+        }
+    }
+
     protected void onOpen() {
         socket.prepend(this, payload(name, "subscribe", ""));
         listener.onOpen();
@@ -50,12 +66,23 @@ public final class AxChannel {
         listener.onClose();
     }
 
-    protected void onMessage(AxEvent event) {
-        listener.onMessage(event);
-    }
-
     protected void onError(Exception e) {
         listener.onError(e);
+    }
+
+    protected void onEvent(AxEvent event) {
+        if (event.getType().equals("error")) {
+            listener.onError(new AxException(event.getString()));
+        } else {
+            listener.onMessage(event);
+        }
+    }
+
+    private void create() {
+        if (isPrivate(name)) {
+            // TODO: create private channel
+        }
+        socket.listen(AxChannel.this);
     }
 
     private String payload(String name, String cmd, String msg) {
@@ -74,11 +101,11 @@ public final class AxChannel {
         return name;
     }
 
-    private boolean isPublic(String name) {
+    protected boolean isPublic(String name) {
         return name.startsWith("public/");
     }
 
-    private boolean isPrivate(String name) {
+    protected boolean isPrivate(String name) {
         return name.startsWith("private/");
     }
 

@@ -15,12 +15,9 @@ import java.nio.file.Paths;
 
 public abstract class AxTest {
 
-    public static final String APP_KEY_1 = "YourAppKey";
-    public static final String APP_KEY_2 = "SomeAppKey";
-
+    public static final String APP_KEY = "YourAppKey";
     public static final String COLLECTION_1 = "MyCollection";
     public static final String COLLECTION_2 = "BlankCollection";
-
     public static final String PROPERTY_1 = "property1";
     public static final String PROPERTY_2 = "property2";
     public static final String PROPERTY_3 = "property3";
@@ -29,13 +26,13 @@ public abstract class AxTest {
     protected Ax ax;
 
     @Rule
-    public Timeout globalTimeout = new Timeout(1000);
+    public Timeout globalTimeout = new Timeout(5000);
 
     @Before
     public void before() throws Exception {
         server = new MockWebServer();
         server.start();
-        ax = new Ax(APP_KEY_1, server.getUrl("/").toString());
+        ax = new Ax(APP_KEY, server.getUrl("/").toString());
     }
 
     @After

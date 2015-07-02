@@ -22,7 +22,7 @@ public class AxSaveTest extends AxTest {
         RecordedRequest req = server.takeRequest();
         assertEquals("POST", req.getMethod());
         assertEquals("/objects/" + COLLECTION_1, req.getPath());
-        assertEquals(APP_KEY_1, req.getHeader("x-appstax-appkey"));
+        assertEquals(APP_KEY, req.getHeader("x-appstax-appkey"));
     }
 
     @Test(expected=AxException.class)

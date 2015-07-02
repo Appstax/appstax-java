@@ -53,7 +53,7 @@ public class AxChannelTest extends AxTest {
 
     @Test
     public void receiveWildcard() throws Exception {
-        final CountDownLatch lock = new CountDownLatch(4*4);
+        final CountDownLatch lock = new CountDownLatch(4*3);
         socket(new Sender(getResource("channel-receive-wildcard.json")));
 
         AxListener count = new AxListener() {
@@ -67,7 +67,7 @@ public class AxChannelTest extends AxTest {
             }
         };
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             ax.channel("public/*", count);
             ax.channel("public/im/*", count);
             ax.channel("public/im/*", count);

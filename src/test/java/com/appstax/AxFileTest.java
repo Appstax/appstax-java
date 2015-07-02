@@ -103,7 +103,7 @@ public class AxFileTest extends AxTest {
         req = server.takeRequest();
         assertEquals("GET", req.getMethod());
         assertEquals("http://" + req.getHeaders().get("Host"), server.getUrl("").toString());
-        assertEquals(APP_KEY_1, req.getHeader("x-appstax-appkey"));
+        assertEquals(APP_KEY, req.getHeader("x-appstax-appkey"));
     }
 
     @Test(expected=AxException.class)
