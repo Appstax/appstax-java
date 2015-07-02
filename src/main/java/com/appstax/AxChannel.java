@@ -34,10 +34,6 @@ public final class AxChannel {
         send(object.marshal());
     }
 
-    public void send(JSONObject object) {
-        send(object.toString());
-    }
-
     public void send(String message) {
         if (name.contains("*")) {
             throw new AxException("can not send to wildcard channel");
@@ -64,15 +60,11 @@ public final class AxChannel {
 
     private String payload(String name, String cmd, String msg) {
         JSONObject item = new JSONObject();
-        item.put("id", messageId());
         item.put("channel", name);
+        item.put("id", UUID.randomUUID().toString());
         if (!cmd.isEmpty()) item.put("command", cmd);
         if (!msg.isEmpty()) item.put("message", msg);
         return item.toString();
-    }
-
-    private String messageId() {
-        return UUID.randomUUID().toString();
     }
 
     private String parse(String name) {

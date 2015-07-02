@@ -24,10 +24,6 @@ public class AxEvent {
         return payload.getString("message");
     }
 
-    public JSONObject getJSON() {
-        return payload.getJSONObject("message");
-    }
-
     public AxObject getObject() {
         return AxObject.unmarshal(client, getString());
     }

@@ -54,7 +54,7 @@ final class AxPaths {
     }
 
     private static String expand(String path, int depth) {
-        return depth == 0 ? path : path + "?expanddepth=" + depth;
+        return depth > 0 ? path + "?expanddepth=" + depth : path;
     }
 
     protected static String encode(String component) {

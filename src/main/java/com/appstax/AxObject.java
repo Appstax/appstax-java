@@ -10,14 +10,13 @@ import java.util.*;
 
 public class AxObject {
 
-    protected static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-    protected static final String TYPE_FILE = "file";
-
     protected static final String KEY_CREATED = "sysCreated";
     protected static final String KEY_UPDATED = "sysUpdated";
     protected static final String KEY_ID = "sysObjectId";
     protected static final String KEY_TYPE = "sysDatatype";
     protected static final String KEY_FILE = "filename";
+    protected static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+    protected static final String TYPE_FILE = "file";
 
     private String collection;
     private AxClient client;

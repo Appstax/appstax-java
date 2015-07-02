@@ -148,9 +148,9 @@ final class AxRelations {
     private Map<String, List<AxObject>> parse(JSONObject properties) {
         Map<String, List<AxObject>> relations = new HashMap<>();
         JSONArray names = properties.names();
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<>();
 
-        if (names == null) {
+        if (names == null || names.length() == 0) {
             return relations;
         }
 

@@ -61,7 +61,6 @@ public class AxChannelTest extends AxTest {
                 lock.countDown();
             }
         };
-
         AxListener fail = new AxListener() {
             public void onMessage(AxEvent event) {
                 throw new AssertionError();
@@ -77,7 +76,7 @@ public class AxChannelTest extends AxTest {
             ax.channel("public/", fail);
             ax.channel("public/im/", fail);
             ax.channel("public/im/f", fail);
-            ax.channel("public/im/fooo", fail);
+            ax.channel("public/im/foo/", fail);
         }
 
         lock.await();
