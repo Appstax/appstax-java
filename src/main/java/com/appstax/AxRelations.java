@@ -57,8 +57,8 @@ final class AxRelations {
         }
         for (String key : keys()) {
             object.put(key, toJSON(
-                    additions.get(key),
-                    removals.get(key)
+                additions.get(key),
+                removals.get(key)
             ));
         }
     }

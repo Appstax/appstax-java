@@ -150,7 +150,7 @@ class AxSocket implements WebSocketListener {
 
     @Override
     public void onOpen(WebSocket socket, Response response) {
-        AxSocket.this.socket = socket;
+        this.socket = socket;
         onOpenAll();
         flush();
     }
