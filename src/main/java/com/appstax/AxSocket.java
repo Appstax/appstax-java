@@ -36,11 +36,13 @@ class AxSocket implements WebSocketListener {
 
     protected void prepend(AxChannel channel, String payload) {
         queue.add(0, new Item(channel, payload));
+        open();
         flush();
     }
 
     protected void append(AxChannel channel, String payload) {
         queue.add(new Item(channel, payload));
+        open();
         flush();
     }
 
