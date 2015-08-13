@@ -53,7 +53,7 @@ public class AxChannelTest extends AxTest {
 
     @Test
     public void receiveWildcard() throws Exception {
-        final CountDownLatch lock = new CountDownLatch(4*3);
+        final CountDownLatch lock = new CountDownLatch(4*3-1);
         socket(new Sender(getResource("channel-receive-wildcard.json")));
 
         AxListener count = new AxListener() {
