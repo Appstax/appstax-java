@@ -18,19 +18,14 @@ import static org.junit.Assert.*;
 
 public class AxChannelTest extends AxTest {
 
-    @Test(expected=AxException.class)
-    public void name() {
-        ax.channel("invalid", null);
-    }
-
     @Test
-    public void subscribe() throws Exception {
+    public void subscribePublic() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
         final AtomicReference<String> res = new AtomicReference<>();
         socket(new Recorder(lock, res, "subscribe"));
 
-        AxChannel c1 = ax.channel("public/sub1", null);
-        AxChannel c2 = ax.channel("public/sub2", null);
+        AxChannel c1 = ax.channel("public/sub1").listen(null);
+        AxChannel c2 = ax.channel("public/sub2").listen(null);
         assertFalse(c1.connected());
         assertFalse(c2.connected());
 
@@ -45,15 +40,50 @@ public class AxChannelTest extends AxTest {
         assertTrue(msg.has("id"));
     }
 
+    @Test
+    public void subscribePrivate() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "subscribe"));
+
+        AxChannel c1 = ax.channel("private/pri1").listen(null);
+        assertFalse(c1.connected());
+
+        lock.await();
+        assertTrue(c1.connected());
+
+        JSONObject msg = new JSONObject(res.get());
+        assertTrue(msg.getString("channel").startsWith("private/pri1"));
+        assertEquals("subscribe", msg.get("command"));
+    }
+
+
+    @Test
+    public void subscribeObject() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "subscribe"));
+
+        AxChannel c1 = ax.channel("objects/authors").listen(null);
+        assertFalse(c1.connected());
+
+        lock.await();
+        assertTrue(c1.connected());
+
+        JSONObject msg = new JSONObject(res.get());
+        assertTrue(msg.getString("channel").startsWith("objects/authors"));
+        assertEquals("subscribe", msg.get("command"));
+    }
+
     @Test(expected=AxException.class)
     public void sendWildcard() throws Exception {
         socket(null);
-        ax.channel("public/*", null).send("1");
+        ax.channel("public/*").listen(null).send("1");
     }
 
     @Test
     public void receiveWildcard() throws Exception {
-        final CountDownLatch lock = new CountDownLatch(4*3-1);
+        final CountDownLatch lock = new CountDownLatch(4);
         socket(new Sender(getResource("channel-receive-wildcard.json")));
 
         AxListener count = new AxListener() {
@@ -67,17 +97,15 @@ public class AxChannelTest extends AxTest {
             }
         };
 
-        for (int i = 0; i < 3; i++) {
-            ax.channel("public/*", count);
-            ax.channel("public/im/*", count);
-            ax.channel("public/im/*", count);
-            ax.channel("public/im/f*", count);
+        ax.channel("public/*").listen(count);
+        ax.channel("public/im/*").listen(count);
+        ax.channel("public/im/*").listen(count);
+        ax.channel("public/im/f*").listen(count);
 
-            ax.channel("public/", fail);
-            ax.channel("public/im/", fail);
-            ax.channel("public/im/f", fail);
-            ax.channel("public/im/foo/", fail);
-        }
+        ax.channel("public/").listen(fail);
+        ax.channel("public/im/").listen(fail);
+        ax.channel("public/im/f").listen(fail);
+        ax.channel("public/im/foo/").listen(fail);
 
         lock.await();
     }
@@ -88,7 +116,7 @@ public class AxChannelTest extends AxTest {
         final AtomicReference<String> res = new AtomicReference<>();
         socket(new Recorder(lock, res, "publish"));
 
-        ax.channel("public/sendString", null).send("123");
+        ax.channel("public/sendString").listen(null).send("123");
         lock.await();
         assertTrue(res.get().contains("\"message\":\"123\""));
     }
@@ -99,7 +127,7 @@ public class AxChannelTest extends AxTest {
         final AtomicReference<AxEvent> res = new AtomicReference<>();
         socket(new Sender(getResource("channel-receive-string.json")));
 
-        ax.channel("public/receiveString", new AxListener() {
+        ax.channel("public/receiveString").listen(new AxListener() {
             public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
@@ -118,7 +146,7 @@ public class AxChannelTest extends AxTest {
         socket(new Recorder(lock, res, "publish"));
 
         AxObject object = ax.object(COLLECTION_1);
-        ax.channel("public/sendObject", null).send(object);
+        ax.channel("public/sendObject").listen(null).send(object);
         lock.await();
 
         String act = res.get();
@@ -132,7 +160,7 @@ public class AxChannelTest extends AxTest {
         final AtomicReference<AxEvent> res = new AtomicReference<>();
         socket(new Sender(getResource("channel-receive-object.json")));
 
-        ax.channel("public/receiveObject", new AxListener() {
+        ax.channel("public/receiveObject").listen(new AxListener() {
             public void onMessage(AxEvent event) {
                 res.set(event);
                 lock.countDown();
@@ -143,6 +171,78 @@ public class AxChannelTest extends AxTest {
         AxObject result = res.get().getObject();
         assertEquals(COLLECTION_1, result.getCollection());
         assertEquals("bar", result.getString("foo"));
+    }
+
+    @Test
+    public void create() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "create"));
+
+        ax.channel("private/1").create();
+        lock.await();
+
+        JSONObject msg = new JSONObject(res.get());
+        assertEquals("channel.create", msg.get("command"));
+    }
+
+    @Test
+    public void delete() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "delete"));
+
+        ax.channel("private/2").delete();
+        lock.await();
+
+        JSONObject msg = new JSONObject(res.get());
+        assertEquals("channel.delete", msg.get("command"));
+    }
+
+    @Test
+    public void grant() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "grant"));
+
+        ax.channel("private/3").grant("read", "foo", "bar");
+        lock.await();
+
+        JSONObject msg = new JSONObject(res.get());
+        assertEquals("channel.grant.read", msg.get("command"));
+        assertEquals("foo", msg.getJSONArray("message").getString(0));
+        assertEquals("bar", msg.getJSONArray("message").getString(1));
+    }
+
+    @Test
+    public void filter() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "subscribe"));
+
+        String filter = "age > 0 and name like 'Eric%'";
+        ax.channel("objects/foo", filter).listen(null);
+        lock.await();
+
+        JSONObject msg = new JSONObject(res.get());
+        assertEquals("subscribe", msg.get("command"));
+        assertEquals("objects/foo", msg.get("channel"));
+        assertEquals(filter, msg.get("filter"));
+    }
+
+    @Test
+    public void revoke() throws Exception {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final AtomicReference<String> res = new AtomicReference<>();
+        socket(new Recorder(lock, res, "revoke"));
+
+        ax.channel("private/4").revoke("write", "*");
+        lock.await();
+
+        JSONObject msg = new JSONObject(res.get());
+        assertEquals("channel.revoke.write", msg.get("command"));
+        assertEquals("*", msg.getJSONArray("message").getString(0));
+        assertEquals("", msg.getJSONArray("message").optString(1));
     }
 
     private void socket(WebSocketListener listener) throws IOException {

@@ -1,18 +1,43 @@
 package com.appstax;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public final class AxChannel {
 
     private AxSocket socket;
     private AxListener listener;
+    private String filter;
     private String name;
 
-    protected AxChannel(AxSocket socket, String name, AxListener listener) {
+    protected AxChannel(AxSocket socket, String name) {
+        this(socket, name, null);
+    }
+
+    protected AxChannel(AxSocket socket, String name, String filter) {
         this.socket = socket;
-        this.name = parse(name);
+        this.filter = filter;
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public AxChannel create() {
+        socket.append(this, payload(name, "channel.create", null));
+        return this;
+    }
+
+    public AxChannel delete() {
+        socket.append(this, payload(name, "channel.delete", null));
+        return this;
+    }
+
+    public AxChannel listen(AxListener listener) {
         this.listener = listener;
 
         if (this.listener == null) {
@@ -21,46 +46,51 @@ public final class AxChannel {
 
         new Thread() {
             public void run() {
-                create();
+                socket.listen(AxChannel.this);
             }
         }.start();
-    }
 
-    public String getName() {
-        return this.name;
+        return this;
     }
 
     public boolean connected() {
         return this.socket.connected();
     }
 
-    public void send(AxObject object) {
+    public AxChannel send(AxObject object) {
+        if (object == null) {
+            return this;
+        }
+
         send(object.marshal());
+        return this;
     }
 
-    public void send(String message) {
+    public AxChannel send(String message) {
         if (name.contains("*")) {
             throw new AxException("can not send to wildcard channel");
         }
+
+        if (message.equals("")) {
+            return this;
+        }
+
         socket.append(this, payload(name, "publish", message));
+        return this;
     }
 
-    public void grant(AxChannel channel, String... users) {
-        if (isPrivate(name)) {
-            // TODO: grant access
-            throw new UnsupportedOperationException("Private channels not implemented");
-        }
+    public AxChannel grant(String permission, String... users) {
+        this.permission("channel.grant." + permission, users);
+        return this;
     }
 
-    public void revoke(AxChannel channel, String... users) {
-        if (isPrivate(name)) {
-            // TODO: revoke access
-            throw new UnsupportedOperationException("Private channels not implemented");
-        }
+    public AxChannel revoke(String permission, String... users) {
+        this.permission("channel.revoke." + permission, users);
+        return this;
     }
 
     protected void onOpen() {
-        socket.prepend(this, payload(name, "subscribe", ""));
+        socket.prepend(this, payload(name, "subscribe", null));
         listener.onOpen();
     }
 
@@ -80,36 +110,27 @@ public final class AxChannel {
         }
     }
 
-    private void create() {
-        if (isPrivate(name)) {
-            // TODO: create private channel
-            throw new UnsupportedOperationException("Private channels not implemented");
-        }
-        socket.listen(AxChannel.this);
+    private void permission(String permission, String[] users) {
+        JSONArray json = new JSONArray(Arrays.asList(users));
+        socket.append(this, payload(name, permission, json));
     }
 
-    private String payload(String name, String cmd, String msg) {
+    private String payload(String name, String cmd, Object data) {
         JSONObject item = new JSONObject();
+
+        item.put("command", cmd);
         item.put("channel", name);
         item.put("id", UUID.randomUUID().toString());
-        if (!cmd.isEmpty()) item.put("command", cmd);
-        if (!msg.isEmpty()) item.put("message", msg);
-        return item.toString();
-    }
 
-    private String parse(String name) {
-        if (!isPublic(name) && !isPrivate(name)) {
-            throw new AxException("invalid name " + name);
+        if (data != null) {
+            item.put("message", data);
         }
-        return name;
-    }
 
-    protected boolean isPublic(String name) {
-        return name.startsWith("public/");
-    }
+        if (filter != null) {
+            item.put("filter", filter);
+        }
 
-    protected boolean isPrivate(String name) {
-        return name.startsWith("private/");
+        return item.toString();
     }
 
 }

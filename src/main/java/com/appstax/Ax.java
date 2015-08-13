@@ -39,8 +39,12 @@ public class Ax {
         return new AxUser(client, username, sessionId);
     }
 
-    public AxChannel channel(String name, AxListener listener) {
-        return new AxChannel(socket, name, listener);
+    public AxChannel channel(String name) {
+        return new AxChannel(socket, name);
+    }
+
+    public AxChannel channel(String name, String filter) {
+        return new AxChannel(socket, name, filter);
     }
 
     public AxObject save(AxObject object) {
