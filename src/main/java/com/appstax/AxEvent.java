@@ -21,7 +21,7 @@ public class AxEvent {
     }
 
     public String getString() {
-        return payload.optString("message");
+        return payload.optString("data");
     }
 
     public AxObject getObject() {

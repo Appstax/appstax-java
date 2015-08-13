@@ -36,7 +36,7 @@ public class AxChannelTest extends AxTest {
         JSONObject msg = new JSONObject(res.get());
         assertTrue(msg.getString("channel").startsWith("public/sub"));
         assertEquals("subscribe", msg.get("command"));
-        assertFalse(msg.has("message"));
+        assertFalse(msg.has("data"));
         assertTrue(msg.has("id"));
     }
 
@@ -118,7 +118,7 @@ public class AxChannelTest extends AxTest {
 
         ax.channel("public/sendString").listen(null).send("123");
         lock.await();
-        assertTrue(res.get().contains("\"message\":\"123\""));
+        assertTrue(res.get().contains("\"data\":\"123\""));
     }
 
     @Test
@@ -210,8 +210,8 @@ public class AxChannelTest extends AxTest {
 
         JSONObject msg = new JSONObject(res.get());
         assertEquals("channel.grant.read", msg.get("command"));
-        assertEquals("foo", msg.getJSONArray("message").getString(0));
-        assertEquals("bar", msg.getJSONArray("message").getString(1));
+        assertEquals("foo", msg.getJSONArray("data").getString(0));
+        assertEquals("bar", msg.getJSONArray("data").getString(1));
     }
 
     @Test
@@ -241,8 +241,8 @@ public class AxChannelTest extends AxTest {
 
         JSONObject msg = new JSONObject(res.get());
         assertEquals("channel.revoke.write", msg.get("command"));
-        assertEquals("*", msg.getJSONArray("message").getString(0));
-        assertEquals("", msg.getJSONArray("message").optString(1));
+        assertEquals("*", msg.getJSONArray("data").getString(0));
+        assertEquals("", msg.getJSONArray("data").optString(1));
     }
 
     private void socket(WebSocketListener listener) throws IOException {

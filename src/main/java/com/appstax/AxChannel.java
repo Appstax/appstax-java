@@ -123,7 +123,7 @@ public final class AxChannel {
         item.put("id", UUID.randomUUID().toString());
 
         if (data != null) {
-            item.put("message", data);
+            item.put("data", data);
         }
 
         if (filter != null) {

@@ -2,5 +2,5 @@
   "channel":"public/receiveObject",
   "event":"message",
   "id":"a07f1d7d-d5a2-4cf7-8c02-f360f7c2ab77",
-  "message":"{\"properties\":{\"foo\":\"bar\"},\"collection\":\"MyCollection\"}"
+  "data":"{\"properties\":{\"foo\":\"bar\"},\"collection\":\"MyCollection\"}"
 }
