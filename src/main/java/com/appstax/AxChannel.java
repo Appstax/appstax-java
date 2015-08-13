@@ -14,17 +14,17 @@ public final class AxChannel {
     private String name;
 
     protected AxChannel(AxSocket socket, String name) {
-        this(socket, name, null);
-    }
-
-    protected AxChannel(AxSocket socket, String name, String filter) {
         this.socket = socket;
-        this.filter = filter;
         this.name = name;
     }
 
     public String getName() {
         return this.name;
+    }
+
+    public AxChannel filter(String filter) {
+        this.filter = filter;
+        return this;
     }
 
     public AxChannel create() {

@@ -221,7 +221,7 @@ public class AxChannelTest extends AxTest {
         socket(new Recorder(lock, res, "subscribe"));
 
         String filter = "age > 0 and name like 'Eric%'";
-        ax.channel("objects/foo", filter).listen(null);
+        ax.channel("objects/foo").filter(filter).listen(null);
         lock.await();
 
         JSONObject msg = new JSONObject(res.get());

@@ -43,10 +43,6 @@ public class Ax {
         return new AxChannel(socket, name);
     }
 
-    public AxChannel channel(String name, String filter) {
-        return new AxChannel(socket, name, filter);
-    }
-
     public AxObject save(AxObject object) {
         return object.save();
     }
