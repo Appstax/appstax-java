@@ -48,12 +48,14 @@ public final class AxChannel {
     public void grant(AxChannel channel, String... users) {
         if (isPrivate(name)) {
             // TODO: grant access
+            throw new UnsupportedOperationException("Private channels not implemented");
         }
     }
 
     public void revoke(AxChannel channel, String... users) {
         if (isPrivate(name)) {
             // TODO: revoke access
+            throw new UnsupportedOperationException("Private channels not implemented");
         }
     }
 
@@ -81,6 +83,7 @@ public final class AxChannel {
     private void create() {
         if (isPrivate(name)) {
             // TODO: create private channel
+            throw new UnsupportedOperationException("Private channels not implemented");
         }
         socket.listen(AxChannel.this);
     }
