@@ -13,19 +13,25 @@ public class AxEvent {
     }
 
     public String getType() {
-        return payload.getString("event");
+        return payload.optString("event");
     }
 
     public String getChannel() {
-        return payload.getString("channel");
+        return payload.optString("channel");
     }
 
     public String getString() {
-        return payload.getString("message");
+        return payload.optString("message");
     }
 
     public AxObject getObject() {
-        return AxObject.unmarshal(client, getString());
+        String msg = this.getString();
+
+        if (!msg.startsWith("{")) {
+            return null;
+        }
+
+        return AxObject.unmarshal(client, msg);
     }
 
 }
