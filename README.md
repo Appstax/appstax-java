@@ -5,7 +5,7 @@
 
 This is the official Java SDK for [Appstax](https://appstax.com).
 
-It's a work in progress, and not ready for use quite yet.
+This is a new SDK, so let us know if you encounter any issues.
 
 ## Usage example
 
