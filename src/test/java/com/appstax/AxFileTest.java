@@ -3,6 +3,7 @@ package com.appstax;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.junit.Test;
 
+import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.junit.Assert.*;
 
 public class AxFileTest extends AxTest {
@@ -27,7 +28,7 @@ public class AxFileTest extends AxTest {
         RecordedRequest req1 = server.takeRequest();
         String body = "{\"image\":{\"sysDatatype\":\"file\",\"filename\":\"file-example-image.jpg\"}}";
         assertEquals("POST", req1.getMethod());
-        assertEquals(body, req1.getBody().readUtf8());
+        assertJsonEquals(body, req1.getBody().readUtf8());
 
         RecordedRequest req2 = server.takeRequest();
         String multipart = req2.getBody().readUtf8();

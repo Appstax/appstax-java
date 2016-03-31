@@ -3,6 +3,7 @@ package com.appstax;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.junit.Test;
 
+import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.junit.Assert.assertEquals;
 
 public class AxPermissionsTest extends AxTest {
@@ -25,7 +26,7 @@ public class AxPermissionsTest extends AxTest {
         String p2 = "\"revokes\":[{\"username\":\"*\",\"permissions\":[\"delete\"]}]}";
         assertEquals("POST", req2.getMethod());
         assertEquals("/permissions", req2.getPath());
-        assertEquals(p1 + p2, req2.getBody().readUtf8());
+        assertJsonEquals(p1 + p2, req2.getBody().readUtf8());
     }
 
     @Test
@@ -46,7 +47,7 @@ public class AxPermissionsTest extends AxTest {
         String p2 = "\"revokes\":[{\"username\":\"bar\",\"permissions\":[\"read\",\"delete\"]}]}";
         assertEquals("POST", req2.getMethod());
         assertEquals("/permissions", req2.getPath());
-        assertEquals(p1 + p2, req2.getBody().readUtf8());
+        assertJsonEquals(p1 + p2, req2.getBody().readUtf8());
     }
 
 }
