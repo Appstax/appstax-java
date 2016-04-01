@@ -182,6 +182,24 @@ public class Ax {
     }
 
     /**
+     * Send password reset email
+     */
+    public void requestPasswordReset(String email) {
+        session.requestPasswordReset(email);
+    }
+
+    /**
+     * Change password with reset code
+     */
+    public AxUser changePassword(String username, String password, String code, boolean login) {
+        AxUser user = session.changePassword(username, password, code, login);
+        if(login && user != null) {
+            client.setUser(user);
+        }
+        return user;
+    }
+
+    /**
      * Make sure the API key is set.
      */
     private String parseKey(String key) {
@@ -200,5 +218,4 @@ public class Ax {
         }
         return url.replaceAll("/$", "") + "/";
     }
-
 }

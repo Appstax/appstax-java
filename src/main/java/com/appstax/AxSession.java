@@ -23,6 +23,32 @@ final class AxSession {
         return user;
     }
 
+    protected void requestPasswordReset(String email) {
+        JSONObject data = new JSONObject();
+        data.put("email", email);
+        client.request(AxClient.Method.POST, AxPaths.requestPasswordReset(), data);
+    }
+
+    protected AxUser changePassword(String username, String password, String code, boolean login) {
+        JSONObject data = new JSONObject();
+        data.put("username", username);
+        data.put("password", password);
+        data.put("pinCode", code);
+        data.put("login", login);
+
+        JSONObject res = client.request(AxClient.Method.POST, AxPaths.changePassword(), data);
+        AxUser user = null;
+        if(login) {
+            user = new AxUser(
+                client,
+                res.getJSONObject("user").getString("sysUsername"),
+                "foo",
+                res.getJSONObject("user")
+            );
+        }
+        return user;
+    }
+
     private AxUser request(String path, String username, String password) {
         JSONObject req = new JSONObject();
         req.put("sysUsername", username);

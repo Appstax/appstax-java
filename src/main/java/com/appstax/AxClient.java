@@ -168,7 +168,7 @@ final class AxClient {
         if (body.startsWith("{")) {
             return new JSONObject(body);
         }
-        throw new AxException(body);
+        return new JSONObject();
     }
 
 }

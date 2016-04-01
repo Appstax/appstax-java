@@ -53,6 +53,14 @@ final class AxPaths {
         return "messaging/realtime?rsession=" + realtimeSessionId;
     }
 
+    protected static String requestPasswordReset() {
+        return "users/reset/email";
+    }
+
+    protected static String changePassword() {
+        return "users/reset/password";
+    }
+
     private static String expand(String path, int depth) {
         return depth > 0 ? path + "?expanddepth=" + depth : path;
     }
