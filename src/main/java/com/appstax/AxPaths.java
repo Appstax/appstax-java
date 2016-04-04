@@ -73,4 +73,7 @@ final class AxPaths {
         }
     }
 
+    protected static String authConfig(String provider) {
+        return "sessions/providers/" + encode(provider);
+    }
 }

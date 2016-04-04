@@ -172,6 +172,14 @@ public class Ax {
     }
 
     /**
+     * Log in with result from login provider dialog
+     */
+    public AxUser loginWithProvider(String provider, AxAuthResult authResult) {
+        client.setUser(session.loginWithProvider(provider, authResult));
+        return client.getUser();
+    }
+
+    /**
      * Logout the current user.
      */
     public void logout() {
@@ -199,6 +207,10 @@ public class Ax {
         return user;
     }
 
+    public AxAuthConfig getAuthConfig(String provider) {
+        return session.getAuthConfig(provider);
+    }
+
     /**
      * Make sure the API key is set.
      */
@@ -218,4 +230,5 @@ public class Ax {
         }
         return url.replaceAll("/$", "") + "/";
     }
+
 }

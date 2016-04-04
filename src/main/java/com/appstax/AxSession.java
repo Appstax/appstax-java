@@ -39,14 +39,27 @@ final class AxSession {
         JSONObject res = client.request(AxClient.Method.POST, AxPaths.changePassword(), data);
         AxUser user = null;
         if(login) {
-            user = new AxUser(
-                client,
-                res.getJSONObject("user").getString("sysUsername"),
-                "foo",
-                res.getJSONObject("user")
-            );
+            user = userFromResponse(res);
         }
         return user;
+    }
+
+    public AxAuthConfig getAuthConfig(String provider) {
+        JSONObject res = client.request(AxClient.Method.GET, AxPaths.authConfig(provider));
+        return AxAuthConfig.config(provider, res.getString("clientId"));
+    }
+
+    public AxUser loginWithProvider(String provider, AxAuthResult authResult) {
+        JSONObject providerData = new JSONObject()
+                .put("code", authResult.getAuthCode())
+                .put("redirectUri", authResult.getRedirectUri());
+        JSONObject sysProvider = new JSONObject()
+                .put("type", provider)
+                .put("data", providerData);
+        JSONObject data = new JSONObject()
+                .put("sysProvider", sysProvider);
+        JSONObject res = client.request(AxClient.Method.POST, AxPaths.sessions(), data);
+        return userFromResponse(res);
     }
 
     private AxUser request(String path, String username, String password) {
@@ -58,4 +71,12 @@ final class AxSession {
         return new AxUser(client, username, res.getString("sysSessionId"), res.getJSONObject("user"));
     }
 
+    private AxUser userFromResponse(JSONObject res) {
+        return new AxUser(
+                client,
+                res.getJSONObject("user").getString("sysUsername"),
+                res.getString("sysSessionId"),
+                res.getJSONObject("user")
+        );
+    }
 }
