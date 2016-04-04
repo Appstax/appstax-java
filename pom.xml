@@ -4,7 +4,7 @@
     <groupId>com.appstax</groupId>
     <artifactId>appstax-java</artifactId>
     <packaging>jar</packaging>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
     <name>appstax-java</name>
     <description>Appstax for Java</description>
     <url>https://github.com/Appstax/appstax-java</url>
